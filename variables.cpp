@@ -63,4 +63,4 @@ int inhale_off_time= 0;
 int shake_time    = 0;
 int pump_out_per  = 50; // 기어펌프 출력 %(기어펌프 듀티사이클은 고정)
 int drain_time    = 0;
-int h2_limit_per  = 50; // 히터2 OFF 한계%
+int h2_limit_per  = 50; // 히터2 유량 OFF 한계%
