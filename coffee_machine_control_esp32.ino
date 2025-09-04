@@ -18,7 +18,7 @@ void setup() {
   NTC_Temperture_Setup();
   Heater1_GPIO_Setup();
   Heater2_PWM_Setup();
-  GearPump_PWM_Output_Setup();
+  GearPump_PWM_Setup();
 
   // 2) WiFi / WebServer 시작
   wifiSetup();
