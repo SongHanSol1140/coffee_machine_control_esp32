@@ -1,7 +1,7 @@
 // Heater2_PWM.cpp
 #include <Arduino.h>
 #include "variables.h"
-#include "Heater2_PWM.h"
+#include "Heater.h"
 
 // ===== 원하는 스타일 선택 =====
 // 핀 기반 래퍼(ledcAttach(pin, freq, res) & ledcWrite(pin, duty)) 사용 시 켜세요.

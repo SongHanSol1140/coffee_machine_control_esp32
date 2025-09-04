@@ -9,6 +9,7 @@
 
 // 초기화/유틸
 void MCP23017_Expander_Init(int sda, int scl, uint8_t address);
+void expanderWriteForDoc(int pin, int level);
 void expanderPaWrite(int pin, int level);
 void expanderPbWrite(int pin, int level);
 void expanderPaRead(int pin);

@@ -48,9 +48,14 @@ void MCP23017_Expander_Init(int sda, int scl, uint8_t address){
 	delay(100);
 	// MCP23017 Expander Setup Complete
 }
+void expanderWriteForDoc(int pin, int level){
+	// 원래는 0~15지만 
+	// 설계도를 쉽게 참조하기위해 1~16으로 변경
+	mcp1.digitalWrite(pin-1, level);
+}
 
 void expanderPaWrite(int pin, int level){
-	mcp1.digitalWrite(pin, level);
+	mcp1.digitalWrite(pin -1, level);
 }
 
 void expanderPbWrite(int pin, int level){
