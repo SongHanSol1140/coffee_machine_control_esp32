@@ -39,4 +39,6 @@ void loop() {
   CT_Emergency_Check();
   GearPump_PWM_Output_Write();
   delay(100);
+  Serial.println(pump_out_per);
+  Serial.println(Heater_2_PWM_output_value);
 }

@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="ko">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1.0" />
   <title>ESP32 Coffee Controller</title>
   <link rel="stylesheet" href="style.css" />
 </head>
+
 <body>
   <h2>시스템 설정</h2>
   <section class="system_button">
@@ -16,7 +18,9 @@
   </section>
 
   <section class="setting_section">
-    <article class="title"><h2>음료 제조</h2></article>
+    <article class="title">
+      <h2>음료 제조</h2>
+    </article>
     <!-- 에스프레소 -->
     <article class="setting_block">
       <div class="menu_name">에스프레소</div>
@@ -81,7 +85,7 @@
     <article class="setting_block">
       <div class="menu_name">공기 흡입량</div>
       <div class="menu_block_input">
-        <div>시작 후 대기시간(sec)</div>
+        <div>시작 후 대기(sec)</div>
         <input type="number" class="inhale_w_time" placeholder="초" value="0">
       </div>
       <div class="menu_block_input">
@@ -118,15 +122,18 @@
       <div class="menu_name">온도 PID 제어</div>
       <div class="menu_block_input">
         <div>P</div>
-        <input type="number" class="Heter_PID_P" placeholder="P" value="0">
+        <input type="number" class="Heter_PID_P" placeholder="P" value="0" step="any" inputmode="decimal"
+          autocomplete="off">
       </div>
       <div class="menu_block_input">
         <div>I</div>
-        <input type="number" class="Heter_PID_I" placeholder="I" value="0">
+        <input type="number" class="Heter_PID_I" placeholder="I" value="0" step="any" inputmode="decimal"
+          autocomplete="off">
       </div>
       <div class="menu_block_input">
         <div>D</div>
-        <input type="number" class="Heter_PID_D" placeholder="D" value="0">
+        <input type="number" class="Heter_PID_D" placeholder="D" value="0" step="any" inputmode="decimal"
+          autocomplete="off">
       </div>
     </article>
     <!-- CT 긴급정지 -->
@@ -137,7 +144,7 @@
         <input type="number" class="emergencyA" placeholder="암페어" value="0">
       </div>
       <div class="menu_block_input">
-        <div>현재 Ampere(실시간)</div>
+        <div>현재 A(실시간)</div>
         <p class="current_ampere">0</p>
       </div>
     </article>
@@ -164,6 +171,12 @@
         <p class="yf_s402b_input_flow">0ml</p>
       </div>
     </article>
+    <article>
+      <div>
+        <p>히터 PWM 출력값(0~255)</p>
+        <p class="Heater_2_PWM_output_value">0</p>
+      </div>
+    </article>
   </section>
 
   <script>
@@ -172,9 +185,9 @@
     const $$ = sel => document.querySelectorAll(sel);
 
     // 시스템 버튼
-    const btnRun  = $('.isRunningButton');
-    const btnEmg  = $('.emergencyStopButton');
-    const btnHot  = $('.hotButton');
+    const btnRun = $('.isRunningButton');
+    const btnEmg = $('.emergencyStopButton');
+    const btnHot = $('.hotButton');
     const btnCold = $('.coldButton');
 
     // 상태 UI 갱신
@@ -187,49 +200,53 @@
     // 폴링 함수들
     async function fetchState() {
       try {
-        const r = await fetch('/api/state', { cache:'no-store' });
+        const r = await fetch('/api/state', { cache: 'no-store' });
         const d = await r.json();
         applyStateUI(d);
-      } catch (e) {}
+      } catch (e) { }
     }
     async function fetchMeasurement() {
       try {
-        const r = await fetch('/api/measurement', { cache:'no-store' });
+        const r = await fetch('/api/measurement', { cache: 'no-store' });
         const d = await r.json();
         const tempEls = $$('.heater_temperature_setting');
         tempEls[0].innerText = d.Heater_1_NTC_TEMP.toFixed(1) + '℃';
         tempEls[1].innerText = d.Heater_2_NTC_TEMP.toFixed(1) + '℃';
         $('.yf_s402b_output_flow').innerText = d.YF_S402B_outputFlow.toFixed(1) + 'ml';
-        $('.yf_s402b_input_flow').innerText  = d.YF_S402B_inputFlow.toFixed(1) + 'ml';
+        $('.yf_s402b_input_flow').innerText = d.YF_S402B_inputFlow.toFixed(1) + 'ml';
         $('.current_ampere').innerText = d.currentAmpere.toFixed(2);
-      } catch (e) {}
+        // ★ 듀티사이클 표시
+        $('.Heater_2_PWM_output_value').innerText = d.Heater_2_PWM_output_value;
+      } catch (e) { }
     }
+
     async function fetchSettings() {
       try {
-        const r = await fetch('/api/settings', { cache:'no-store' });
+        const r = await fetch('/api/settings', { cache: 'no-store' });
         const d = await r.json();
-        $('.e_ml_set').value       = d.e_ml_set;
-        $('.water_ml_set').value   = d.water_ml_set;
-        $('.a_e_ml_set').value     = d.a_e_ml_set;
-        $('.a_w_ml_set').value     = d.a_w_ml_set;
-        $('.a_tmp_set').value      = d.a_tmp_set;
-        $('.c_e_ml_set').value     = d.c_e_ml_set;
-        $('.c_m_ml_set').value     = d.c_m_ml_set;
-        $('.c_tmp_set').value      = d.c_tmp_set;
-        $('.clean_time').value     = d.clean_time;
+        $('.e_ml_set').value = d.e_ml_set;
+        $('.water_ml_set').value = d.water_ml_set;
+        $('.a_e_ml_set').value = d.a_e_ml_set;
+        $('.a_w_ml_set').value = d.a_w_ml_set;
+        $('.a_tmp_set').value = d.a_tmp_set;
+        $('.c_e_ml_set').value = d.c_e_ml_set;
+        $('.c_m_ml_set').value = d.c_m_ml_set;
+        $('.c_tmp_set').value = d.c_tmp_set;
+        $('.clean_time').value = d.clean_time;
         $('.clean_time_all').value = d.clean_time_all;
-        $('.inhale_w_time').value  = d.inhale_w_time;
-        $('.inhale_time').value    = d.inhale_time;
+        $('.inhale_w_time').value = d.inhale_w_time;
+        $('.inhale_time').value = d.inhale_time;
         $('.inhale_on_time').value = d.inhale_on_time;
-        $('.inhale_off_time').value= d.inhale_off_time;
-        $('.shake_time').value     = d.shake_time;
-        $('.pump_out_per').value   = d.pump_out_per;
+        $('.inhale_off_time').value = d.inhale_off_time;
+        $('.shake_time').value = d.shake_time;
+        $('.pump_out_per').value = d.pump_out_per;
         $('.drain_time') && ($('.drain_time').value = d.drain_time);
-        $('.emergencyA').value     = d.emergencyA;
-        $('.Heter_PID_P').value    = d.Heter_PID_P;
-        $('.Heter_PID_I').value    = d.Heter_PID_I;
-        $('.Heter_PID_D').value    = d.Heter_PID_D;
-      } catch (e) {}
+        $('.emergencyA').value = d.emergencyA;
+        $('.Heter_PID_P').value = d.Heter_PID_P;
+        $('.Heter_PID_I').value = d.Heter_PID_I;
+        $('.Heter_PID_D').value = d.Heter_PID_D;
+        $('.Heater_2_PWM_output_value').value = d.Heater_2_PWM_output_value;
+      } catch (e) { }
     }
 
     // 주기적 호출 (0.5초/3초)
@@ -242,8 +259,8 @@
     function updateSetting(name, value) {
       const params = new URLSearchParams({ name, value });
       fetch('/api/updateSetting', {
-        method:'POST',
-        headers:{ 'Content-Type':'application/x-www-form-urlencoded' },
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: params.toString()
       }).then(() => {
         fetchSettings();
@@ -252,13 +269,13 @@
 
     // 바인딩할 클래스 목록
     const bindings = [
-      'e_ml_set','water_ml_set',
-      'a_e_ml_set','a_w_ml_set','a_tmp_set',
-      'c_e_ml_set','c_m_ml_set','c_tmp_set',
-      'clean_time','clean_time_all',
-      'inhale_w_time','inhale_time','inhale_on_time','inhale_off_time',
-      'shake_time','pump_out_per','drain_time',
-      'emergencyA','Heter_PID_P','Heter_PID_I','Heter_PID_D'
+      'e_ml_set', 'water_ml_set',
+      'a_e_ml_set', 'a_w_ml_set', 'a_tmp_set',
+      'c_e_ml_set', 'c_m_ml_set', 'c_tmp_set',
+      'clean_time', 'clean_time_all',
+      'inhale_w_time', 'inhale_time', 'inhale_on_time', 'inhale_off_time',
+      'shake_time', 'pump_out_per', 'drain_time',
+      'emergencyA', 'Heter_PID_P', 'Heter_PID_I', 'Heter_PID_D'
     ];
     bindings.forEach(cls => {
       const el = document.querySelector('.' + cls);
@@ -274,38 +291,39 @@
 
     // 버튼 이벤트
     btnRun.addEventListener('click', async () => {
-      const r = await fetch('/api/isRunning/toggle', { method:'POST' });
+      const r = await fetch('/api/isRunning/toggle', { method: 'POST' });
       const d = await r.json(); applyStateUI(d);
     });
     btnEmg.addEventListener('click', async () => {
-      const r = await fetch('/api/emergencyStop', { method:'POST' });
+      const r = await fetch('/api/emergencyStop', { method: 'POST' });
       const d = await r.json(); applyStateUI(d);
     });
     btnHot.addEventListener('click', async () => {
-      const r = await fetch('/api/hot', { method:'POST' });
+      const r = await fetch('/api/hot', { method: 'POST' });
       const d = await r.json(); applyStateUI(d);
     });
     btnCold.addEventListener('click', async () => {
-      const r = await fetch('/api/cold', { method:'POST' });
+      const r = await fetch('/api/cold', { method: 'POST' });
       const d = await r.json(); applyStateUI(d);
     });
     // 제조/청소 시작
     $('.espresso_start').addEventListener('click', async () => {
-      const r = await fetch('/api/start/espresso', { method:'POST' });
+      const r = await fetch('/api/start/espresso', { method: 'POST' });
       const d = await r.json(); applyStateUI(d);
     });
     $('.americano_start').addEventListener('click', async () => {
-      const r = await fetch('/api/start/americano', { method:'POST' });
+      const r = await fetch('/api/start/americano', { method: 'POST' });
       const d = await r.json(); applyStateUI(d);
     });
     $('.cafelatte_start').addEventListener('click', async () => {
-      const r = await fetch('/api/start/cafelatte', { method:'POST' });
+      const r = await fetch('/api/start/cafelatte', { method: 'POST' });
       const d = await r.json(); applyStateUI(d);
     });
     $('.cleaning_start').addEventListener('click', async () => {
-      const r = await fetch('/api/start/cleaning', { method:'POST' });
+      const r = await fetch('/api/start/cleaning', { method: 'POST' });
       const d = await r.json(); applyStateUI(d);
     });
   </script>
 </body>
+
 </html>

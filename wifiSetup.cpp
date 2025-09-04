@@ -27,15 +27,15 @@ static String buildStateJson() {
 
 // 측정값 JSON
 static String buildMeasurementJson() {
-  DynamicJsonDocument doc(256);
+  DynamicJsonDocument doc(512); // 크기 조금 늘림
   doc["Heater_1_NTC_TEMP"]   = Heater_1_NTC_TEMP;
   doc["Heater_2_NTC_TEMP"]   = Heater_2_NTC_TEMP;
   doc["YF_S402B_outputFlow"] = YF_S402B_outputFlow;
   doc["YF_S402B_inputFlow"]  = YF_S402B_inputFlow;
   doc["currentAmpere"]       = currentAmpere;
+  doc["Heater_2_PWM_output_value"] = Heater_2_PWM_output_value; // ★ 추가
   String s; serializeJson(doc, s); return s;
 }
-
 // 설정값 JSON (변수명과 동일한 키, 15자 이하)
 static String buildSettingsJson() {
   DynamicJsonDocument doc(512);
@@ -136,6 +136,7 @@ static void updateSettingByName(const String& name, const String& v) {
   else if (name == "Heter_PID_P") { Heter_PID_P   = dv; saveSetting(name, Heter_PID_P); }
   else if (name == "Heter_PID_I") { Heter_PID_I   = dv; saveSetting(name, Heter_PID_I); }
   else if (name == "Heter_PID_D") { Heter_PID_D   = dv; saveSetting(name, Heter_PID_D); }
+  else if (name == "Heater_2_PWM_output_value") { Heater_2_PWM_output_value   = iv; saveSetting(name, iv); }
   Serial.printf("[UPDATE] %s = %s\n", name.c_str(), v.c_str());
 }
 

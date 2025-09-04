@@ -43,7 +43,7 @@ const int GearPump_PWM_inputPIN = 32;
 int c_esspresso_ml = 0;
 int c_water_ml     = 0;
 int c_milk_ml      = 0;
-int c_tmp          = 0;
+int c_tmp          = 40;
 
 // 설정값
 int e_ml_set     = 0;
@@ -61,6 +61,6 @@ int inhale_time    = 0;
 int inhale_on_time = 0;
 int inhale_off_time= 0;
 int shake_time    = 0;
-int pump_out_per  = 0;
+int pump_out_per  = 50; // 기어펌프 출력 %(기어펌프 듀티사이클은 고정)
 int drain_time    = 0;
 int h2_limit_per  = 50; // 히터2 OFF 한계%

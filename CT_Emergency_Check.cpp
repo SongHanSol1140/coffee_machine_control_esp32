@@ -15,17 +15,7 @@ void CT_Emergency_Check() {
   }
   float analogValue =  sum / NUM_READS;
   currentAmpere = (analogValue - adc_zero) * (3.3 / 4095.0) / 0.185;
-	// 아날로그값(평균)
-	Serial.print("analog value: ");
-	Serial.println(analogValue);
-	// VCC로 환산
-	float vcc = analogValue * 3.3 / 4095;
-	Serial.print("VCC: ");
-	Serial.println(vcc);
-	//   // Ampere (20A ACS712)
-	//   // (현재 ADC값 - 0A일때 ADC값) * (ADC를 전압으로 바꾸는 비율) / (센서 감도)
-	//   float ampere = (analogValue - adc_zero) * (3.3 / 4095.0) / 0.1;
-	//   Serial.print("Ampere: ");
-	//   Serial.println(ampere);
-
+  if (currentAmpere > emergencyA) {
+    emergencyStop = true;
+  }
 }
