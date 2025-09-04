@@ -1,5 +1,7 @@
 {
 	"files.associations": {
-		"print": "cpp"
+		"print": "cpp",
+		"__node_handle": "cpp",
+		"optional": "cpp"
 	}
 }

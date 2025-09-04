@@ -15,7 +15,7 @@ void GearPump_PWM_Output_Setup(){
 }
 
 void GearPump_PWM_Output_Write(){
-  int percent = GearPump_PWM_output_percent; // variables.cpp의 전역
+  int percent = pump_out_per; // variables.cpp의 전역
   if (percent < 0)   percent = 0;
   if (percent > 100) percent = 100;
 

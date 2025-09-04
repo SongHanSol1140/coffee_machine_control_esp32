@@ -44,7 +44,7 @@ void Heater2_PWM_Compute() {
   if (dt <= 0.0f) dt = 1e-3f;
   lastMs = now;
 
-  const float setpoint = (float)create_temperature;
+  const float setpoint = (float)c_tmp;
   const float current  = Heater_2_NTC_TEMP;
   float error = setpoint - current;
 

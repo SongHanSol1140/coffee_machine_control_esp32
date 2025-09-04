@@ -1,13 +1,11 @@
 <!DOCTYPE html>
 <html lang="ko">
-
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1.0" />
   <title>ESP32 Coffee Controller</title>
   <link rel="stylesheet" href="style.css" />
 </head>
-
 <body>
   <h2>시스템 설정</h2>
   <section class="system_button">
@@ -18,19 +16,17 @@
   </section>
 
   <section class="setting_section">
-    <article class="title">
-      <h2>음료 제조</h2>
-    </article>
+    <article class="title"><h2>음료 제조</h2></article>
     <!-- 에스프레소 -->
     <article class="setting_block">
       <div class="menu_name">에스프레소</div>
       <div class="menu_block_input">
         <div>에스프레소 양</div>
-        <input type="number" class="create_espresso_ml_setting" placeholder="ml" value="0">
+        <input type="number" class="e_ml_set" placeholder="ml" value="0">
       </div>
       <div class="menu_block_input">
         <div>물 양</div>
-        <input type="number" class="create_water_ml_setting" placeholder="ml" value="0">
+        <input type="number" class="water_ml_set" placeholder="ml" value="0">
       </div>
       <button class="running_start espresso_start">제조 시작</button>
     </article>
@@ -39,15 +35,15 @@
       <div class="menu_name">아메리카노</div>
       <div class="menu_block_input">
         <div>에스프레소 양</div>
-        <input type="number" class="create_americano_espresso_ml_setting" placeholder="ml" value="0">
+        <input type="number" class="a_e_ml_set" placeholder="ml" value="0">
       </div>
       <div class="menu_block_input">
         <div>물 양</div>
-        <input type="number" class="create_americano_water_ml_setting" placeholder="ml" value="0">
+        <input type="number" class="a_w_ml_set" placeholder="ml" value="0">
       </div>
       <div class="menu_block_input">
         <div>온도</div>
-        <input type="number" class="create_americano_temperature_setting" placeholder="℃" value="0">
+        <input type="number" class="a_tmp_set" placeholder="℃" value="0">
       </div>
       <button class="running_start americano_start">제조 시작</button>
     </article>
@@ -56,15 +52,15 @@
       <div class="menu_name">카페라떼</div>
       <div class="menu_block_input">
         <div>에스프레소 양</div>
-        <input type="number" class="create_cafelatte_espresso_ml_setting" placeholder="ml" value="0">
+        <input type="number" class="c_e_ml_set" placeholder="ml" value="0">
       </div>
       <div class="menu_block_input">
         <div>우유 양</div>
-        <input type="number" class="create_cafelatte_milk_ml_setting" placeholder="ml" value="0">
+        <input type="number" class="c_m_ml_set" placeholder="ml" value="0">
       </div>
       <div class="menu_block_input">
         <div>온도</div>
-        <input type="number" class="create_cafelatte_temperature_setting" placeholder="℃" value="0">
+        <input type="number" class="c_tmp_set" placeholder="℃" value="0">
       </div>
       <button class="running_start cafelatte_start">제조 시작</button>
     </article>
@@ -73,11 +69,11 @@
       <div class="menu_name">청소</div>
       <div class="menu_block_input">
         <div>청소 시간</div>
-        <input type="number" class="cleaning_time_setting" placeholder="초" value="0">
+        <input type="number" class="clean_time" placeholder="초" value="0">
       </div>
       <div class="menu_block_input">
         <div>전체 청소 시간</div>
-        <input type="number" class="cleaning_time_all_setting" placeholder="초" value="0">
+        <input type="number" class="clean_time_all" placeholder="초" value="0">
       </div>
       <button class="running_start cleaning_start">청소 시작</button>
     </article>
@@ -85,20 +81,20 @@
     <article class="setting_block">
       <div class="menu_name">공기 흡입량</div>
       <div class="menu_block_input">
-        <div>시작 후 대기시간</div>
-        <input type="number" class="air_inhale_start_after_waiting_time_setting" placeholder="초" value="0">
+        <div>시작 후 대기시간(sec)</div>
+        <input type="number" class="inhale_w_time" placeholder="초" value="0">
       </div>
       <div class="menu_block_input">
-        <div>흡입 시간</div>
-        <input type="number" class="air_inhale_time_setting" placeholder="초" value="0">
+        <div>흡입 시간(sec)</div>
+        <input type="number" class="inhale_time" placeholder="초" value="0">
       </div>
       <div class="menu_block_input">
-        <div>ON 시간</div>
-        <input type="number" class="air_inhale_on_time_setting" placeholder="초" value="0">
+        <div>ON 시간(sec)</div>
+        <input type="number" class="inhale_on_time" placeholder="초" value="0">
       </div>
       <div class="menu_block_input">
-        <div>OFF 시간</div>
-        <input type="number" class="air_inhale_off_time_setting" placeholder="초" value="0">
+        <div>OFF 시간(sec)</div>
+        <input type="number" class="inhale_off_time" placeholder="초" value="0">
       </div>
     </article>
     <!-- 혼합 시간 -->
@@ -106,7 +102,7 @@
       <div class="menu_name">혼합 시간</div>
       <div class="menu_block_input">
         <div>시간(sec)</div>
-        <input type="number" class="create_shake_time_setting" placeholder="초" value="0">
+        <input type="number" class="shake_time" placeholder="초" value="0">
       </div>
     </article>
     <!-- 기어펌프 출력 % -->
@@ -114,7 +110,7 @@
       <div class="menu_name">기어펌프 출력 %</div>
       <div class="menu_block_input">
         <div>출력 % 설정값</div>
-        <input type="number" class="GearPump_PWM_output_percent" placeholder="%" min="0" max="100" value="0">
+        <input type="number" class="pump_out_per" placeholder="%" min="0" max="100" value="0">
       </div>
     </article>
     <!-- PID 제어 -->
@@ -138,7 +134,7 @@
       <div class="menu_name">CT Emergency</div>
       <div class="menu_block_input">
         <div>위험 Ampere 설정</div>
-        <input type="number" class="emergencyAmpere" placeholder="암페어" value="0">
+        <input type="number" class="emergencyA" placeholder="암페어" value="0">
       </div>
       <div class="menu_block_input">
         <div>현재 Ampere(실시간)</div>
@@ -175,30 +171,30 @@
     const $ = sel => document.querySelector(sel);
     const $$ = sel => document.querySelectorAll(sel);
 
-    // 시스템 버튼 요소
+    // 시스템 버튼
     const btnRun  = $('.isRunningButton');
     const btnEmg  = $('.emergencyStopButton');
     const btnHot  = $('.hotButton');
     const btnCold = $('.coldButton');
 
-    // 상태에 따른 버튼 UI 적용
+    // 상태 UI 갱신
     function applyStateUI(state) {
       btnRun.classList.toggle('on', !!state.isRunning);
       btnHot.classList.toggle('on', !!state.isHot);
       btnCold.classList.toggle('on', !!state.isCold);
     }
 
-    // 측정값, 상태, 설정값 주기적 갱신
+    // 폴링 함수들
     async function fetchState() {
       try {
-        const r = await fetch('/api/state', { cache: 'no-store' });
+        const r = await fetch('/api/state', { cache:'no-store' });
         const d = await r.json();
         applyStateUI(d);
       } catch (e) {}
     }
     async function fetchMeasurement() {
       try {
-        const r = await fetch('/api/measurement', { cache: 'no-store' });
+        const r = await fetch('/api/measurement', { cache:'no-store' });
         const d = await r.json();
         const tempEls = $$('.heater_temperature_setting');
         tempEls[0].innerText = d.Heater_1_NTC_TEMP.toFixed(1) + '℃';
@@ -210,127 +206,105 @@
     }
     async function fetchSettings() {
       try {
-        const r = await fetch('/api/settings', { cache: 'no-store' });
+        const r = await fetch('/api/settings', { cache:'no-store' });
         const d = await r.json();
-        $('.create_espresso_ml_setting').value            = d.create_espresso_ml_setting;
-        $('.create_water_ml_setting').value              = d.create_water_ml_setting;
-        $('.create_americano_espresso_ml_setting').value = d.create_americano_espresso_ml_setting;
-        $('.create_americano_water_ml_setting').value   = d.create_americano_water_ml_setting;
-        $('.create_americano_temperature_setting').value = d.create_americano_temperature_setting;
-        $('.create_cafelatte_espresso_ml_setting').value = d.create_cafelatte_espresso_ml_setting;
-        $('.create_cafelatte_milk_ml_setting').value    = d.create_cafelatte_milk_ml_setting;
-        $('.create_cafelatte_temperature_setting').value = d.create_cafelatte_temperature_setting;
-        $('.cleaning_time_setting').value               = d.cleaning_time_setting;
-        $('.cleaning_time_all_setting').value           = d.cleaning_time_all_setting;
-        $('.air_inhale_start_after_waiting_time_setting').value = d.air_inhale_start_after_waiting_time_setting;
-        $('.air_inhale_time_setting').value             = d.air_inhale_time_setting;
-        $('.air_inhale_on_time_setting').value          = d.air_inhale_on_time_setting;
-        $('.air_inhale_off_time_setting').value         = d.air_inhale_off_time_setting;
-        $('.create_shake_time_setting').value           = d.create_shake_time_setting;
-        $('.GearPump_PWM_output_percent').value         = d.GearPump_PWM_output_percent;
-        $('.drain_time_setting') && ($('.drain_time_setting').value = d.drain_time_setting);
-        $('.emergencyAmpere').value                    = d.emergencyAmpere;
-        $('.Heter_PID_P').value                        = d.Heter_PID_P;
-        $('.Heter_PID_I').value                        = d.Heter_PID_I;
-        $('.Heter_PID_D').value                        = d.Heter_PID_D;
+        $('.e_ml_set').value       = d.e_ml_set;
+        $('.water_ml_set').value   = d.water_ml_set;
+        $('.a_e_ml_set').value     = d.a_e_ml_set;
+        $('.a_w_ml_set').value     = d.a_w_ml_set;
+        $('.a_tmp_set').value      = d.a_tmp_set;
+        $('.c_e_ml_set').value     = d.c_e_ml_set;
+        $('.c_m_ml_set').value     = d.c_m_ml_set;
+        $('.c_tmp_set').value      = d.c_tmp_set;
+        $('.clean_time').value     = d.clean_time;
+        $('.clean_time_all').value = d.clean_time_all;
+        $('.inhale_w_time').value  = d.inhale_w_time;
+        $('.inhale_time').value    = d.inhale_time;
+        $('.inhale_on_time').value = d.inhale_on_time;
+        $('.inhale_off_time').value= d.inhale_off_time;
+        $('.shake_time').value     = d.shake_time;
+        $('.pump_out_per').value   = d.pump_out_per;
+        $('.drain_time') && ($('.drain_time').value = d.drain_time);
+        $('.emergencyA').value     = d.emergencyA;
+        $('.Heter_PID_P').value    = d.Heter_PID_P;
+        $('.Heter_PID_I').value    = d.Heter_PID_I;
+        $('.Heter_PID_D').value    = d.Heter_PID_D;
       } catch (e) {}
     }
 
-    // 주기적 호출
+    // 주기적 호출 (0.5초/3초)
     setInterval(fetchState, 500);
     setInterval(fetchMeasurement, 500);
     setInterval(fetchSettings, 3000);
-    fetchState();
-    fetchMeasurement();
-    fetchSettings();
+    fetchState(); fetchMeasurement(); fetchSettings();
 
-    // 서버에 설정값 전송
+    // 설정 업데이트
     function updateSetting(name, value) {
       const params = new URLSearchParams({ name, value });
       fetch('/api/updateSetting', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        method:'POST',
+        headers:{ 'Content-Type':'application/x-www-form-urlencoded' },
         body: params.toString()
       }).then(() => {
         fetchSettings();
       });
     }
 
-    // 입력값 변경 시 즉시 updateSetting 호출
+    // 바인딩할 클래스 목록
     const bindings = [
-      'create_espresso_ml_setting',
-      'create_water_ml_setting',
-      'create_americano_espresso_ml_setting',
-      'create_americano_water_ml_setting',
-      'create_americano_temperature_setting',
-      'create_cafelatte_espresso_ml_setting',
-      'create_cafelatte_milk_ml_setting',
-      'create_cafelatte_temperature_setting',
-      'cleaning_time_setting',
-      'cleaning_time_all_setting',
-      'air_inhale_start_after_waiting_time_setting',
-      'air_inhale_time_setting',
-      'air_inhale_on_time_setting',
-      'air_inhale_off_time_setting',
-      'create_shake_time_setting',
-      'GearPump_PWM_output_percent',
-      'drain_time_setting',
-      'emergencyAmpere',
-      'Heter_PID_P',
-      'Heter_PID_I',
-      'Heter_PID_D'
+      'e_ml_set','water_ml_set',
+      'a_e_ml_set','a_w_ml_set','a_tmp_set',
+      'c_e_ml_set','c_m_ml_set','c_tmp_set',
+      'clean_time','clean_time_all',
+      'inhale_w_time','inhale_time','inhale_on_time','inhale_off_time',
+      'shake_time','pump_out_per','drain_time',
+      'emergencyA','Heter_PID_P','Heter_PID_I','Heter_PID_D'
     ];
-    bindings.forEach(className => {
-      const el = document.querySelector('.' + className);
+    bindings.forEach(cls => {
+      const el = document.querySelector('.' + cls);
       if (el) {
+        el.addEventListener('input', (e) => {
+          updateSetting(cls, e.target.value);
+        });
         el.addEventListener('change', (e) => {
-          updateSetting(className, e.target.value);
+          updateSetting(cls, e.target.value);
         });
       }
     });
 
-    // 시스템 버튼 이벤트
+    // 버튼 이벤트
     btnRun.addEventListener('click', async () => {
-      const r = await fetch('/api/isRunning/toggle', { method: 'POST' });
-      const d = await r.json();
-      applyStateUI(d);
+      const r = await fetch('/api/isRunning/toggle', { method:'POST' });
+      const d = await r.json(); applyStateUI(d);
     });
     btnEmg.addEventListener('click', async () => {
-      const r = await fetch('/api/emergencyStop', { method: 'POST' });
-      const d = await r.json();
-      applyStateUI(d);
+      const r = await fetch('/api/emergencyStop', { method:'POST' });
+      const d = await r.json(); applyStateUI(d);
     });
     btnHot.addEventListener('click', async () => {
-      const r = await fetch('/api/hot', { method: 'POST' });
-      const d = await r.json();
-      applyStateUI(d);
+      const r = await fetch('/api/hot', { method:'POST' });
+      const d = await r.json(); applyStateUI(d);
     });
     btnCold.addEventListener('click', async () => {
-      const r = await fetch('/api/cold', { method: 'POST' });
-      const d = await r.json();
-      applyStateUI(d);
+      const r = await fetch('/api/cold', { method:'POST' });
+      const d = await r.json(); applyStateUI(d);
     });
-
-    // 제조/청소 시작 버튼 이벤트
+    // 제조/청소 시작
     $('.espresso_start').addEventListener('click', async () => {
-      const r = await fetch('/api/start/espresso', { method: 'POST' });
-      const d = await r.json();
-      applyStateUI(d);
+      const r = await fetch('/api/start/espresso', { method:'POST' });
+      const d = await r.json(); applyStateUI(d);
     });
     $('.americano_start').addEventListener('click', async () => {
-      const r = await fetch('/api/start/americano', { method: 'POST' });
-      const d = await r.json();
-      applyStateUI(d);
+      const r = await fetch('/api/start/americano', { method:'POST' });
+      const d = await r.json(); applyStateUI(d);
     });
     $('.cafelatte_start').addEventListener('click', async () => {
-      const r = await fetch('/api/start/cafelatte', { method: 'POST' });
-      const d = await r.json();
-      applyStateUI(d);
+      const r = await fetch('/api/start/cafelatte', { method:'POST' });
+      const d = await r.json(); applyStateUI(d);
     });
     $('.cleaning_start').addEventListener('click', async () => {
-      const r = await fetch('/api/start/cleaning', { method: 'POST' });
-      const d = await r.json();
-      applyStateUI(d);
+      const r = await fetch('/api/start/cleaning', { method:'POST' });
+      const d = await r.json(); applyStateUI(d);
     });
   </script>
 </body>
