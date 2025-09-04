@@ -10,12 +10,17 @@
 
 void setup() {
   Serial.begin(115200);
+
+  loadSettings();
+
   MCP23017_Expander_Init(MCP23017_SDA, MCP23017_SCL, 0x20);
   FlowMeter_Setup();
   NTC_Temperture_Setup();
   Heater1_GPIO_Setup();
   Heater2_PWM_Setup();
   GearPump_PWM_Output_Setup();
+
+  // 2) WiFi / WebServer 시작
   wifiSetup();
   startWebServer();
 }
@@ -24,7 +29,7 @@ void loop() {
   if (WiFi.status() != WL_CONNECTED) {
     wifiSetup();
   }
-  // ================================================
+  // 0.5초 주기 측정/제어
   flowMeter_Output_Read();
   flowMeter_Input_Read();
   heater_1_NTC_Temperture_Read();
@@ -34,5 +39,4 @@ void loop() {
   CT_Emergency_Check();
   GearPump_PWM_Output_Write();
   delay(100);
-
 }
