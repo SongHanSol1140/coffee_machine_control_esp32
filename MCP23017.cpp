@@ -33,7 +33,7 @@ void MCP23017_Expander_Init(int sda, int scl, uint8_t address){
 	}
 	delay(100);
 	// PORTA를 모두 HIGH로 설정
-	mcp1.writeGPIOA(0xFF);
+	mcp1.writeGPIOA(0x00);
 	// PORTB를 모두 LOW 설정
 	mcp1.writeGPIOB(0x00);
 
@@ -48,11 +48,17 @@ void MCP23017_Expander_Init(int sda, int scl, uint8_t address){
 	delay(100);
 	// MCP23017 Expander Setup Complete
 }
+// 원래는 0~15지만 
+// 설계도를 쉽게 참조하기위해 1~16으로 변경
 void expanderWriteForDoc(int pin, int level){
-	// 원래는 0~15지만 
-	// 설계도를 쉽게 참조하기위해 1~16으로 변경
 	mcp1.digitalWrite(pin-1, level);
 }
+bool expanderReadForDoc(int pin){
+    // 1~10 핀 번호를 0~9 인덱스로 변환하여 읽은 값을 반환합니다.
+    return mcp1.digitalRead(pin - 1);
+}
+
+// ===============================================
 
 void expanderPaWrite(int pin, int level){
 	mcp1.digitalWrite(pin -1, level);

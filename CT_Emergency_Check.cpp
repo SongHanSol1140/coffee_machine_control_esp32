@@ -6,15 +6,16 @@
 const int NUM_READS = 5;       // 평균을 낼 읽기 횟수
 // 중요: 전류가 흐르지 않을 때 측정되는 ADC 값을 여기에 입력하세요.
 // 이 값은 센서마다, 전원 환경에 따라 조금씩 다릅니다.
-const int adc_zero = 1950;
 void CT_Emergency_Check() {
   long sum = 0;
   for (int i = 0; i < NUM_READS; i++) {
     sum += analogRead(CT_emergencyAmpere_check_PIN);
     delay(2);
   }
-  float analogValue =  sum / NUM_READS;
-  currentAmpere = (analogValue - adc_zero) * (3.3 / 4095.0) / 0.185;
+  ctAnalogValue =  sum / NUM_READS;
+  
+  currentAmpere = (ctAnalogValue - ctAdcZero) * (3.3 / 4095.0) / 0.185;
+
   if (currentAmpere > emergencyA) {
     emergencyStop = true;
   }

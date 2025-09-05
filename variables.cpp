@@ -1,9 +1,10 @@
+// variables.cpp
 #include "variables.h"
 
 // ESP32 커피 제조 기능 On/Off 변수
-bool isRunning = false;
-bool isWorking = false;
-bool emergencyStop = false;
+volatile bool isRunning = false;
+volatile bool isWorking = false;
+volatile bool emergencyStop = false;
 bool isHot = true;
 bool isCold = false;
 
@@ -11,6 +12,8 @@ bool isCold = false;
 float emergencyA = 5;
 float currentAmpere = 0;
 const int CT_emergencyAmpere_check_PIN = 36;
+int ctAdcZero = 1950;
+float ctAnalogValue = 0;
 
 // MCP23017
 const int MCP23017_SDA = 21;
@@ -47,7 +50,7 @@ int c_tmp          = 40;
 
 // 설정값
 int e_ml_set     = 0;
-int water_ml_set = 0;
+int e_tmp_set = 0;
 int a_e_ml_set   = 0;
 int a_w_ml_set   = 0;
 int a_tmp_set    = 0;
@@ -56,11 +59,30 @@ int c_m_ml_set   = 0;
 int c_tmp_set    = 0;
 int clean_time   = 0;
 int clean_time_all = 0;
-int inhale_w_time  = 0;
-int inhale_time    = 0;
-int inhale_on_time = 0;
-int inhale_off_time= 0;
+int inhale_w_time  = 0; // 공기 흡입 시작 대기시간
+int inhale_time    = 0; // 공기 흡입 시간
+int inhale_on_time = 0; // 공기 흡입 ON 시간
+int inhale_off_time= 0; // 공기 흡입 OFF 시간
 int shake_time    = 0;
 int pump_out_per  = 50; // 기어펌프 출력 %(기어펌프 듀티사이클은 고정)
-int drain_time    = 0;
+int drain_time    = 0; // 드레인 시간
 int h2_limit_per  = 50; // 히터2 유량 OFF 한계%
+
+
+// GPIO 상태 출력 변수
+// ESP32 GPIO 상태
+bool ESP32_GPIO25 = false; // 히터 #1
+
+// MCP23017 GPIO Expander
+// PA
+bool expanderGPIO1 = false;
+bool expanderGPIO2 = false;
+bool expanderGPIO3 = false;
+bool expanderGPIO4 = false;
+bool expanderGPIO5 = false;
+bool expanderGPIO6 = false;
+bool expanderGPIO7 = false;
+bool expanderGPIO8 = false;
+// PB
+bool expanderGPIO9 = false;
+bool expanderGPIO10 = false;

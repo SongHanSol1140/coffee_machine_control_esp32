@@ -1,6 +1,6 @@
 /*
 	MCP23017 I2C Expander 연결
-	
+
   라이브러리 설치
   Adafruit Busio + Adafruit MCP23017
 
@@ -13,13 +13,13 @@
 	1  0  1    0x25 - Adafruit_MCP23X17 mcp6;
 	1  1  0    0x26 - Adafruit_MCP23X17 mcp7;
 	1  1  1    0x27 - Adafruit_MCP23X17 mcp8;
-	
+
 	MCP23017 GPIO I2C Expander
 	SDA / SCL 핀
 		ESP32 GPIO 21 (SDA) → MCP23017의 SDA
 		ESP32 GPIO 22 (SCL) → MCP23017의 SCL
 
-	MCP23017 Address못찾을시 .ino에 업로드
+	MCP23017 Address못찾을시 .ino에 업로드할 코드
 	만약 찾을수 없다면 배선에 문제가 있을 확률이 높습니다.
 	// #include <Wire.h>
 
@@ -59,17 +59,16 @@
 	// }
 */
 
-
-
-
 /*
 	NTC 온도 센서 연결
-	34,35번핀에 NTC 온도 센서 연결예정
+	34,35번핀에 NTC 온도 센서 연결
+
+	배선 연결 가이드
 	1. 한쪽을 그라운드에 연결하고 (GND)
-	2. 한쪽을 빵판한곳에 꽂으세요. (3.3v인데 저항+입력핀으로 멀티드롭 해야함)
+	2. 한쪽을 빵판 한곳에 꽂으세요. (3.3v인데 저항+입력핀으로 멀티드롭 해야함)
 	   해당 핀과 ESP32 3.3v pin과 연결하는데, 10k 저항 사용
 	   각 입력핀(34,35)에도 연결해주세요. (이쪽엔 저항이 필요없음)
-	
+
 	온도센서 #1은 Heater #1 연동
 	온도센서 #2는 Heater #2 연동
 
@@ -87,7 +86,110 @@
 
 	전압 입력 방향은 초록색 커넥터
 	기기 초록색 부분을 정면에 두고 마주봤을때(VCC/OUT/GND문자 핀이 반대에 있음) 좌측이 +(VCC) 우측이 -(GND)
-	
 
+
+
+*/
+
+/*
 	
+	전제조건
+		1. isRunning(System ON) true일때만 제조 시작 버튼 동작가능(html과 esp32에서 이중 점검)
+		2. isWorking(제조 중) false일때만 제조 시작버튼 동작가능(html과 esp32에서 이중 점검)
+		3. 현재 CT 측정 Amepere가 설정한 위험값보다 높아지면 모든 동작 중지(모든 GPIO off)
+		4. 긴급 정지 버튼 눌릴시 모든 GPIO off. PWM off
+		5. cold 상태라면 제조시 히터를 켜지 않음(Heater Relay, Heater SSR 모두 OFF)
+		6. 작업중 코드블로킹이 되어 emergencyStop 또는 currentAmpere > emergencyA 상태가 되지않도록 유의할것
+	에스프레소 추출
+		1. 웹페이지에서 에스프레소 제조버튼 클릭
+		2. GPIO Expander #7 ON
+		3. GPIO 25 ON (Heater Relay)
+		4. GPIO 33 PWM ON ON (Heater SSR) 
+		5. GPIO 32 PWM ON (기어 펌프)
+		6. 드레인 시간동안 대기
+		7. GPIO Expander #8 ON (출구 3Way Valve)
+		8. GPIO#18 유량계 총유량 > 에스프레소 - 에스프레소 설정ml * (히터 정지 유량비율(%) / 100)까지 대기
+		9. GPIO 25 OFF (히터 #1)
+		10. GPIO 33 PWM OFF(히터 #2)
+		11. GPIO#18 유량계 총 유량 > 에스프레소 설정값까지 대기
+		12. GPIO 32 PMW OFF(기어펌프)
+		13. GPIO Expander #7 OFF (순환 3Way Valve)
+		14. GPIO Expander #8 OFF (출구 3Way Valve)
+
+	아메리카노 추출
+		1. 웹페이지에서 아메리카노 제조버튼 클릭
+		2. GPIO Expander #6 ON (에스프레소 출구 바이패스)
+		3. GPIO Expander #9 ON (혼합 입구 펌프)
+		4. GPIO#19 유량계 총 유량 > 아메리카노 에스프레소 설정값까지 대기
+		5. GPIO Expander #9 OFF (혼합 입구 펌프)
+		6. GPIO#19 유량계 누적값 초기화
+		7. GPIO Expander #4 ON(정수 물 전자변)
+		8. GPIO#19 유량계 총 유량 > 아메리카노 물 설정값 비교값까지 대기
+		9. GPIO Expander #4 OFF 정지(정수 물 전자변)
+		10. GPIO32 PWM ON(기어펌프)
+		11. GPIO33 PWM ON된 시간이 설정된 혼합시간과 일치할때까지 대기
+		12. GPIO25 ON(Heater Relay)
+		13. GPIO33 PWM ON(Heater SSR) - PID 제어
+		14. 공기 흡입 시작
+			14-1. 공기 흡입 시작 대기시간 대기
+			14-2. GPIO Expander #5 ON
+			14-3. 공기 흡입 ON 시간 대기
+			14-4. GPIO Expander #5 OFF
+			14-5. 공기 흡입 OFF 시간 대기
+			14-6. 공기 흡입시간까지 ON/OFF반복 후 공기 흡입 종료
+		15. GPIO Expander #7 ON
+		16. 드레인 시간동안 대기
+		17. GPIO Expander #8 ON(출구 3Way Valve)
+		18. GPIO#18 유량계 총유량 > (아메리카노 에스프레소 설정값 + 아메리카노 물 설정값) * (히터 정지 유량비율(%) / 100)까지 대기
+		19. GPIO25 출력 정지, GPIO33 PWM OFF
+		20. GPIO#18 유량계 총 유량 > 아메리카노 에스프레소 + 물 설정값 까지 대기 
+		21. GPIO32 PWM출력 OFF (기어펌프)
+		22. GPIO Expander #7 OFF (순환 3Way Valve)
+		23. GPIO Expander #8 OFF (출구 3Way Valve)
+
+	카페라떼 추출
+		1. 웹페이지에서 카페라떼 제조버튼 클릭
+		2. GPIO Expander #6 ON (에스프레소 출구 바이패스)
+		3. GPIO Expander #9 ON(혼합 입구 펌프)
+		4. GPIO#19 유량계 총 유량 > 카페라떼 에스프레소 설정값까지 대기
+		5. GPIO Expander #9 OFF(혼합 입구 펌프)
+		6. GPIO#19 유량계 누적값 초기화
+		7. GPIO Expander #2 ON(우유 전자변)
+		8. GPIO#19 유량계 총 유량 > 카페라떼 우유 설정값 비교값까지 대기
+		9. GPIO Expander #2 OFF(우유 전자변)
+		10. GPIO33 PWM ON(기어펌프)
+		11. GPIO33 PWM ON된 시간이 설정된 혼합시간과 일치할때까지 대기
+		12. GPIO25 ON(Heater Relay)
+		13. GPIO33 PWM ON(Heater SSR) - PID 제어
+		14. 공기 흡입 시작
+			14-1. 공기 흡입 시작 대기시간 대기
+			14-2. GPIO Expander #5 ON
+			14-3. 공기 흡입 ON 시간 대기
+			14-4. GPIO Expander #5 OFF
+			14-5. 공기 흡입 OFF 시간 대기
+			14-6. 공기 흡입시간까지 ON/OFF반복 후 공기 흡입 종료
+		15. GPIO Expander #7 ON
+		16. 드레인 시간동안 대기
+		17. GPIO Expander #8 ON(출구 3Way Valve)
+		18. GPIO#18 유량계 총유량 > (카페라떼 에스프레소 설정값 + 카페라떼 우유 설정값) * (히터 정지 유량비율(%) / 100)까지 대기
+		19. GPIO25 출력 정지, GPIO33 PWM OFF
+		20. GPIO#18 유량계 총 유량 > 카페라떼 에스프레소 + 우유 설정값 까지 대기 
+		21. GPIO32 PWM출력 OFF (기어펌프)
+		22. GPIO Expander #7 OFF (순환 3Way Valve)
+		23. GPIO Expander #8 OFF (출구 3Way Valve)
+
+	청소
+		1. 웹페이지에서 청소버튼 클릭
+		2. GPIO Expander #3 ON(청소 전자변)
+		3. GPIO Expander #9 ON(혼합탱크 입구 펌프)
+		4. GPIO33 ON(기어펌프)
+		5. 청소 시작후 설정된 청소 전환시간 비교후 시간이 일치하면
+		6. GPIO Expander #3 OFF(청소 전자변)
+		7. GPIO Expander #9 OFF(혼합탱크 입구 펌프)
+		8. GPIO Expander #7 ON(혼합 3Way Valve)
+		9. GPIO Expander #8 ON(출구 3Way Valve)
+		10. 청소 시작후 설정된 청소 전체 시간 비교후 시간이 일치하면
+		11. GPIO33 OFF(기어펌프)
+		12. GPIO Expander #7 OFF(혼합 3Way Valve)
+		13. GPIO Expander #8 OFF(출구 3Way Valve)
 */

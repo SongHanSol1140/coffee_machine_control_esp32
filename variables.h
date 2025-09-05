@@ -1,10 +1,11 @@
+// variables.h
 #ifndef VARIABLES_H
 #define VARIABLES_H
 
 // ESP32 커피 제조 기능 On/Off 변수
-extern bool isRunning;
-extern bool isWorking;
-extern bool emergencyStop;
+volatile extern bool isRunning;
+volatile extern bool isWorking;
+volatile extern bool emergencyStop;
 extern bool isHot;
 extern bool isCold;
 
@@ -12,6 +13,8 @@ extern bool isCold;
 extern float emergencyA;
 extern float currentAmpere;
 extern const int CT_emergencyAmpere_check_PIN;
+extern int ctAdcZero;
+extern float ctAnalogValue;
 
 // MCP23017 GPIO EXPANDER
 extern const int MCP23017_SDA;
@@ -48,7 +51,7 @@ extern int c_tmp;
 
 // 설정값 (15자 이하 키)
 extern int e_ml_set;      // 에스프레소 에스프레소 양
-extern int water_ml_set;  // 에스프레소 물 양
+extern int e_tmp_set;  // 에스프레소 물 양 water_ml_set
 extern int a_e_ml_set;    // 아메리카노 에스프레소 양
 extern int a_w_ml_set;    // 아메리카노 물 양
 extern int a_tmp_set;     // 아메리카노 온도
@@ -65,5 +68,25 @@ extern int shake_time;    // 혼합 시간
 extern int pump_out_per;  // 기어펌프 출력 %
 extern int drain_time;    // 드레인 시간
 extern int h2_limit_per;  // 히터2 OFF 흐름 한계 %
+
+
+
+// GPIO 상태 출력 변수
+// ESP32 GPIO 상태
+extern bool ESP32_GPIO25; // 히터 #1
+
+// MCP23017 GPIO Expander
+// PA
+extern bool expanderGPIO1; // Solenoid Valve #1			
+extern bool expanderGPIO2; // Solenoid Valve #2
+extern bool expanderGPIO3; // Solenoid Valve #3
+extern bool expanderGPIO4; // Solenoid Valve #4
+extern bool expanderGPIO5; // Solenoid Valve #5
+extern bool expanderGPIO6; // 3Way Valve #1
+extern bool expanderGPIO7; // 3Way Valve #2
+extern bool expanderGPIO8; // 3Way Valve #3
+// PB
+extern bool expanderGPIO9; // Pump #1
+extern bool expanderGPIO10; // 릴레이 #2
 
 #endif // VARIABLES_H
