@@ -1,8 +1,5 @@
 {
 	"files.associations": {
-		"print": "cpp",
-		"__node_handle": "cpp",
-		"optional": "cpp",
 		"__bit_reference": "cpp",
 		"__hash_table": "cpp",
 		"__split_buffer": "cpp",
@@ -12,6 +9,7 @@
 		"string": "cpp",
 		"string_view": "cpp",
 		"unordered_map": "cpp",
-		"vector": "cpp"
+		"vector": "cpp",
+		"print": "cpp"
 	}
 }

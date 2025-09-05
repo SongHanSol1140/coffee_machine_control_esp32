@@ -9,9 +9,9 @@
 #include <freertos/task.h>
 
 // 와이파이 정보
-const char* wifi_ssid = "NNX2-2.4G";
+const char* wifi_ssid = "nnx-factory 3 2.4G";
 const char* wifi_password = "$@43skshslrtm";
-const IPAddress wifiIP(192, 168, 0, 231);
+const IPAddress wifiIP(192, 168, 0, 231); // 접속할 고정 IP 설정(이미 사용중일 경우 동작 에러날 수 있음)
 const IPAddress gateway(192, 168, 0, 1);
 const IPAddress subnet(255, 255, 255, 0);
 const IPAddress dns(192, 168, 0, 1);
@@ -246,11 +246,37 @@ static void updateSettingByName(const String& name, const String& v) {
 // WiFi 연결
 void wifiSetup() {
   if (WiFi.status() != WL_CONNECTED) {
+
+    // 미사용시 주석처리
+    // 고정 IP 설정
+    if (!WiFi.config(wifiIP, gateway, subnet)) {
+      Serial.println("STA Failed to configure");
+    }
+    // 고정IP 설정 끝
+    /*
+      WIFI_STA (Station 모드): 현재 코드처럼 다른 와이파이 네트워크에 **'연결'**할 때 사용합니다. 로봇과 통신하려면 로봇이 연결된 공유기에 접속해야 하므로 이 모드를 사용해야 합니다.
+      WIFI_AP (Access Point 모드): ESP32가 직접 와이파이 신호를 뿌리는 '공유기' 역할을 합니다. 스마트폰 등으로 ESP32에 직접 접속해야 할 때 사용합니다.
+      WIFI_AP_STA (AP + Station 동시 모드): 위 두 가지 모드를 동시에 사용합니다.
+    */
     WiFi.mode(WIFI_STA);
+    /*
+      전력 절감 모드를 비활성화하여 응답 지연(latency)을 최소화합니다.
+      실시간 통신에서 가장 효과적인 최적화 중 하나입니다.
+    */
     WiFi.setSleep(false);
-    WiFi.setAutoReconnect(true);
-    WiFi.persistent(false);
+    WiFi.setAutoReconnect(true);          // 자동 재연결
+    WiFi.persistent(false);               // 설정을 Flash에 저장하지 않음
+    /*
+      설명 : WIFI_POWER_19_5dBm 모드는 최대 전력을 사용하는 모드입니다.
+      즉, 최대 전력을 사용하여 와이파이 신호를 뿌립니다.
+      이 모드는 최대 전력을 사용하여 와이파이 신호를 뿌립니다.
+    */
     WiFi.setTxPower(WIFI_POWER_19_5dBm);
+
+
+
+
+
     WiFi.begin(wifi_ssid, wifi_password);
     while (WiFi.status() != WL_CONNECTED) {
       Serial.println("connecting wifi...");
@@ -260,7 +286,7 @@ void wifiSetup() {
     Serial.println(WiFi.localIP());
     Serial.println("WIFI connected!");
   }
-  delay(100);
+  delay(500);
 }
 
 // Web 서버 시작
@@ -273,7 +299,6 @@ void startWebServer() {
 
   // 정적 파일 제공
   server.serveStatic("/", LittleFS, "/").setDefaultFile("index.html");
-
   // 상태
   server.on("/api/state", HTTP_GET, [](AsyncWebServerRequest* req) {
     req->send(200, "application/json", buildStateJson());
@@ -282,23 +307,27 @@ void startWebServer() {
   // 토글/비상/온도 모드
   server.on("/api/isRunning/toggle", HTTP_POST, [](AsyncWebServerRequest* req) {
     isRunning = !isRunning;
+    emergencyStop = false;
+    Serial.println("System On Button Touched");
     req->send(200, "application/json", buildStateJson());
   });
   server.on("/api/emergencyStop", HTTP_POST, [](AsyncWebServerRequest* req) {
     emergencyStop = true;
     isRunning = false;
     isWorking = false;
-    Serial.println("EmergencyStop");
+    Serial.println("EmergencyStop Button Touched");
     req->send(200, "application/json", buildStateJson());
   });
   server.on("/api/hot", HTTP_POST, [](AsyncWebServerRequest* req) {
     isHot = true;
     isCold = false;
+    Serial.println("Hot Button Touched");
     req->send(200, "application/json", buildStateJson());
   });
   server.on("/api/cold", HTTP_POST, [](AsyncWebServerRequest* req) {
     isCold = true;
     isHot = false;
+    Serial.println("Cold Button Touched");
     req->send(200, "application/json", buildStateJson());
   });
 
@@ -327,45 +356,24 @@ void startWebServer() {
 
   // 제조/청소 시작 (에스프레소)
   server.on("/api/start/espresso", HTTP_POST, [](AsyncWebServerRequest* req) {
-    // 에스프레소 추출에 필요한 값 설정
-    c_esspresso_ml = 0;
-    c_water_ml = 0;
-    c_milk_ml = 0;
-    c_tmp = 0;
-    // 사용자 설정값으로 대입 (에스프레소는 우유/물 사용 안 함)
-    c_esspresso_ml = e_ml_set;
-    c_tmp = e_tmp_set;
-    // 시스템 실행 상태 설정. isWorking은 createEspresso() 내부에서 처리
     Serial.println("Start_Espresso");
-    // 즉시 응답 전송
     req->send(200, "application/json", buildStateJson());
-    // 비동기적으로 추출 태스크 생성 (핸들 사용 안 함)
     xTaskCreatePinnedToCore(espressoTask, "EspressoTask", 4096, NULL, 1, NULL, 1);
   });
   server.on("/api/start/americano", HTTP_POST, [](AsyncWebServerRequest* req) {
-    // 아메리카노 추출에 필요한 값 설정
-    c_esspresso_ml = a_e_ml_set;
-    c_water_ml = a_w_ml_set;
-    c_tmp = a_tmp_set;
     Serial.println("Start_Americano");
     req->send(200, "application/json", buildStateJson());
-    // 비동기적으로 아메리카노 추출 태스크 생성
+    xTaskCreatePinnedToCore(americanoTask, "AmericanoTask", 4096, NULL, 1, NULL, 1);
   });
   server.on("/api/start/cafelatte", HTTP_POST, [](AsyncWebServerRequest* req) {
-    c_esspresso_ml = c_e_ml_set;
-    c_milk_ml = c_m_ml_set;
-    c_tmp = c_tmp_set;
-    isRunning = true;
-    isWorking = true;
     Serial.println("Start_CafeLatte");
     req->send(200, "application/json", buildStateJson());
+    xTaskCreatePinnedToCore(cafelatteTask, "CafelatteTask", 4096, NULL, 1, NULL, 1);
   });
   server.on("/api/start/cleaning", HTTP_POST, [](AsyncWebServerRequest* req) {
-    // clean_time과 clean_time_all은 필요에 따라 c_* 변수에 대입하지 않아도 됩니다.
-    isRunning = true;
-    isWorking = true;
     Serial.println("Start_Cleaning");
     req->send(200, "application/json", buildStateJson());
+    xTaskCreatePinnedToCore(cleaningTask, "CleaningTask", 4096, NULL, 1, NULL, 1);
   });
 
   server.begin();

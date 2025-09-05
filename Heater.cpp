@@ -11,7 +11,6 @@ static constexpr int HEATER2_PWM_FREQ_HZ  = 12000; // Hz
 static constexpr int HEATER2_RES_BITS     = 8;   // 10-bit -> duty 0~1023 / 8-bit -> duty 0~255
 static constexpr int HEATER2_MAX_DUTY     = (1 << HEATER2_RES_BITS) - 1;
 
-
 // ===== PID 내부 상태 =====
 static float integralTerm = 0.0f;
 static float prevError    = 0.0f;

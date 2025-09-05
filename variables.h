@@ -41,7 +41,7 @@ extern double Heter_PID_I;
 extern double Heter_PID_D;
 
 // 기어모터 출력핀 (소프트 스타트)
-extern const int GearPump_PWM_inputPIN;
+extern const int GearPump_PWM_outputPIN;
 
 // 커피 제조 값 (제조 시 대입)
 extern int c_esspresso_ml;

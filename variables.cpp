@@ -11,7 +11,7 @@ bool isCold = false;
 // CT ADC 입력핀
 float emergencyA = 5;
 float currentAmpere = 0;
-const int CT_emergencyAmpere_check_PIN = 36;
+const int CT_emergencyAmpere_check_PIN = 36; // VP
 int ctAdcZero = 1950;
 float ctAnalogValue = 0;
 
@@ -40,13 +40,13 @@ double Heter_PID_I = 0.05;
 double Heter_PID_D = 0.02;
 
 // 기어모터
-const int GearPump_PWM_inputPIN = 32;
+const int GearPump_PWM_outputPIN = 32;
 
 // 커피 제조 값 (실제 제조 시 사용)
 int c_esspresso_ml = 0;
 int c_water_ml     = 0;
 int c_milk_ml      = 0;
-int c_tmp          = 40;
+int c_tmp          = 30;
 
 // 설정값
 int e_ml_set     = 0;

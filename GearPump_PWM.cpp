@@ -9,8 +9,8 @@ static constexpr int GEAR_PUMP_PWM_MAX_DUTY = (1 << GEAR_PUMP_PWM_RES_BITS) - 1;
 
 
 void GearPump_PWM_Setup(){
-  ledcAttach(GearPump_PWM_inputPIN, GEAR_PUMP_PWM_FREQ_HZ, GEAR_PUMP_PWM_RES_BITS);
-  ledcWrite(GearPump_PWM_inputPIN, 0);
+  ledcAttach(GearPump_PWM_outputPIN, GEAR_PUMP_PWM_FREQ_HZ, GEAR_PUMP_PWM_RES_BITS);
+  ledcWrite(GearPump_PWM_outputPIN, 0);
   delay(100);
 }
 
@@ -20,9 +20,9 @@ void GearPump_PWM_ON(){
   if (percent > 100) percent = 100;
 
   int duty = (GEAR_PUMP_PWM_MAX_DUTY * percent) / 100;
-  ledcWrite(GearPump_PWM_inputPIN, duty);
+  ledcWrite(GearPump_PWM_outputPIN, duty);
 }
 
 void GearPump_PWM_OFF(){
-  ledcWrite(GearPump_PWM_inputPIN, 0);
+  ledcWrite(GearPump_PWM_outputPIN, 0);
 }

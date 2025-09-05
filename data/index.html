@@ -6,7 +6,9 @@
   <meta name="viewport" content="width=device-width,initial-scale=1.0" />
   <title>ESP32 Coffee Controller</title>
   <!-- 분리된 스타일시트 로딩 -->
-  <link rel="stylesheet" href="style.css" />
+  <!-- <link rel="stylesheet" href="style.css" /> -->
+  <link rel="stylesheet" href="style.css?v=<%= Date.now() %>" />
+
 </head>
 
 <body>
@@ -115,23 +117,10 @@
     <article class="setting_block">
       <div class="menu_name">기어펌프 출력 %</div>
       <div class="menu_block_input">
-        <div>출력 % 설정값</div>
+        <div>출력 %(0~100)</div>
         <input type="number" class="pump_out_per" placeholder="%" min="0" max="100" value="0">
       </div>
-    </article>
-    <!-- 드레인 및 히터2 한계 설정 -->
-    <article class="setting_block">
-      <div class="menu_name">배수/히터2</div>
-      <div class="menu_block_input">
-        <div>드레인 시간(sec)</div>
-        <!-- drain_time 값을 입력하여 서버에 전송 -->
-        <input type="number" class="drain_time" placeholder="초" value="0">
-      </div>
-      <div class="menu_block_input">
-        <div>히터2 OFF 퍼센트</div>
-        <!-- h2_limit_per 값을 입력하여 서버에 전송 -->
-        <input type="number" class="h2_limit_per" placeholder="%" min="0" max="100" value="0">
-      </div>
+      <div>기어펌프 사용시 설정한 %로 PWM출력 고정</div>
     </article>
     <!-- PID 제어 값 설정 -->
     <article class="setting_block">
@@ -154,7 +143,7 @@
     </article>
     <!-- CT 긴급 정지 설정 -->
     <article class="setting_block">
-      <div class="menu_name">CT Emergency</div>
+      <div class="menu_name">5A CT sensor</div>
       <div class="menu_block_input">
         <div>위험 Ampere 설정</div>
         <input type="number" class="emergencyA" placeholder="암페어" value="0">
@@ -172,6 +161,26 @@
         <input type="number" class="ctAdcZero" placeholder="값" value="0">
       </div>
     </article>
+    <p>측정된 current Analog값만큼 Analog 보정치를 설정하면 currentA 계산</p>
+        <!-- 드레인 시간 설정 -->
+        <article class="setting_block">
+          <div class="menu_name">드레인 시간</div>
+          <div class="menu_block_input">
+            <div>드레인 시간(sec)</div>
+            <!-- drain_time 값을 입력하여 서버에 전송 -->
+            <input type="number" class="drain_time" placeholder="초" value="0">
+          </div>
+        </article>
+        <!-- SSR 히터 종료 유량 설정 -->
+        <article class="setting_block">
+          <div class="menu_name">SSR 히터</div>
+          <div class="menu_block_input">
+            <div>히터 Off 유량 %</div>
+            <!-- h2_limit_per 값을 입력하여 서버에 전송 -->
+            <input type="number" class="h2_limit_per" placeholder="%" min="0" max="100" value="0">
+          </div>
+          <div> SSR 제어 히터 종료 조건 : 필요 유량 * (설정값 / 100)</div>
+        </article>
   </section>
 
   <!-- 실시간 측정값 뷰어 -->
