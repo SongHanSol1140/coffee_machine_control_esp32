@@ -89,4 +89,11 @@ extern bool expanderGPIO8; // 3Way Valve #3
 extern bool expanderGPIO9; // Pump #1
 extern bool expanderGPIO10; // 릴레이 #2
 
+// === PWM 상태 플래그 ===
+// 웹페이지에서 PWM 출력을 ON/OFF 할 수 있도록 상태를 저장합니다.
+// GearPump_PWM_ON() 호출 시 true, GearPump_PWM_OFF() 호출 시 false로 설정됩니다.
+extern bool gearPumpOn;
+// Heater2 PWM(SSR) 출력 상태. Heater2_PWM_Write() 호출 시 true, Heater2_PWM_ForceOff() 호출 시 false로 설정됩니다.
+extern bool heater2On;
+
 #endif // VARIABLES_H

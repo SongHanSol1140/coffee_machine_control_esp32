@@ -35,6 +35,11 @@ void Heater2_PWM_Setup() {
 	lastMs       = millis();
 	Heater_2_PWM_output_value = 0;
 	delay(100);
+
+  // 기본 상태는 PWM 출력이 꺼진 것으로 간주합니다.
+  // ledcAttach/ledcWrite를 통해 0 duty로 초기화하지만 상태 플래그를 명시적으로 false로
+  // 설정하여 웹 UI 등에서 정확한 초기 상태를 표시할 수 있게 합니다.
+  heater2On = false;
 }
 
 void Heater2_PWM_Compute() {
@@ -67,11 +72,25 @@ void Heater2_PWM_Compute() {
 }
 
 void Heater2_PWM_Write() {
-  int duty =Heater_2_PWM_output_value;
+  int duty = Heater_2_PWM_output_value;
+  // heater2On 플래그가 false인 경우에는 계산된 duty를 출력하지 않고 강제로 0을 내보냅니다.
+  // 이를 통해 사용자가 PWM 출력 OFF를 선택했을 때 주기적으로 호출되는 PWM_Write가 다시 출력을 켜지 않도록 합니다.
+  if (!heater2On) {
+    ledcWrite(Heater_2_PWM_PIN, 0);
+    // off 상태에서는 플래그를 유지합니다.
+    return;
+  }
+
+  // ON 상태이면 계산된 duty 값을 그대로 출력합니다.
   ledcWrite(Heater_2_PWM_PIN, duty);
+  // 출력 duty가 0인 경우 자동으로 플래그를 false로 갱신합니다.
+  heater2On = (duty > 0);
 }
 
 void Heater2_PWM_ForceOff() {
   Heater_2_PWM_output_value = 0;
   ledcWrite(Heater_2_PWM_PIN, 0);
+
+  // 강제 OFF 시 상태 플래그도 업데이트합니다.
+  heater2On = false;
 }

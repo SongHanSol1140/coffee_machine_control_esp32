@@ -46,6 +46,8 @@ void createValueReset() {
   c_water_ml = 0;
   c_milk_ml = 0;
   c_tmp = 0;
+  YF_S402B_outputFlow = 0;
+  YF_S402B_inputFlow = 0;
 }
 
 void createEspresso() {

@@ -216,7 +216,7 @@
     <article>
       <div>ESP32 GPIO</div>
       <div>
-        <p>GPIO25</p>
+        <p>히터 #1 (Pin25)</p>
         <p class="ESP32_GPIO25 indicator"></p>
       </div>
     </article>
@@ -267,6 +267,21 @@
         <p class="GPIO10 indicator"></p>
       </div>
     </article>
+
+    <!-- PWM 출력 상태 표시 (ESP32 GPIO32: 기어펌프, GPIO33: 히터2 SSR) -->
+    <article>
+      <div>PWM Output</div>
+      <div>
+        <p>PWM32</p>
+        <!-- 기어펌프 상태 표시 -->
+        <p class="PWM32 indicator"></p>
+      </div>
+      <div>
+        <p> 히터 #2 (SSR)</p>
+        <!-- 히터2 SSR 상태 표시 -->
+        <p class="PWM33 indicator"></p>
+      </div>
+    </article>
   </section>
   <!-- 프론트엔드 로직 -->
   <script>
@@ -314,7 +329,7 @@
         $('.Heater_2_PWM_output_value').innerText = d.Heater_2_PWM_output_value;
         $('.ctAnalogValue').innerText = parseInt(d.ctAnalogValue);
         // GPIO 상태 표시 업데이트
-        const gpioKeys = ['ESP32_GPIO25', 'GPIO1', 'GPIO2', 'GPIO3', 'GPIO4', 'GPIO5', 'GPIO6', 'GPIO7', 'GPIO8', 'GPIO9', 'GPIO10'];
+        const gpioKeys = ['ESP32_GPIO25', 'GPIO1', 'GPIO2', 'GPIO3', 'GPIO4', 'GPIO5', 'GPIO6', 'GPIO7', 'GPIO8', 'GPIO9', 'GPIO10', 'PWM32', 'PWM33'];
         gpioKeys.forEach(key => {
           const el = document.querySelector('.' + key);
           if (el) {
@@ -368,6 +383,40 @@
     setInterval(fetchSettings, 3000);
     // 페이지 로드시 즉시 호출
     fetchState(); fetchMeasurement(); fetchSettings();
+
+    /**
+     * GPIO 및 PWM 출력을 토글하는 함수.
+     * name 파라미터로 ESP32_GPIO25, GPIO1~GPIO10, PWM32, PWM33 중 하나를 전달합니다.
+     */
+    function toggleGPIOOutput(name) {
+      const params = new URLSearchParams({ name });
+      fetch('/api/gpio/toggle', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: params.toString()
+      }).then(() => {
+        // 토글 후 즉시 측정값을 다시 가져와 UI를 갱신합니다.
+        fetchMeasurement();
+      });
+    }
+
+    // GPIO/PWM 상태 표시 원을 클릭했을 때 해당 출력을 토글하도록 이벤트 리스너를 추가합니다.
+    function bindIndicatorToggle() {
+      const indicators = document.querySelectorAll('.gpio_state_view .indicator');
+      indicators.forEach(ind => {
+        ind.style.cursor = 'pointer';
+        ind.addEventListener('click', (e) => {
+          // indicator 요소의 클래스 리스트에서 indicator를 제외한 첫 번째 클래스를 이름으로 사용합니다.
+          const classes = Array.from(e.currentTarget.classList);
+          const key = classes.find(c => c !== 'indicator');
+          if (key) {
+            toggleGPIOOutput(key);
+          }
+        });
+      });
+    }
+    // DOM이 준비되면 바인딩을 설정합니다.
+    document.addEventListener('DOMContentLoaded', bindIndicatorToggle);
 
     /**
      * 서버의 설정값을 업데이트하는 함수.

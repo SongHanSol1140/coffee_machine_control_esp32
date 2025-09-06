@@ -126,6 +126,7 @@
 		4. 긴급 정지 버튼 눌릴시 모든 GPIO off. PWM off
 		5. cold 상태라면 제조시 히터를 켜지 않음(Heater Relay, Heater SSR 모두 OFF)
 		6. 작업중 코드블로킹이 되어 emergencyStop 또는 currentAmpere > emergencyA 상태가 되지않도록 유의할것
+		
 	에스프레소 추출(createEspresso)
 		1. 웹페이지에서 에스프레소 제조버튼 클릭
 		2. Start조건 확인 (isRunning, isWorking)

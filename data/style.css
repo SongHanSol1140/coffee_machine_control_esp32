@@ -52,7 +52,7 @@ section {height: 100%;display: flex;}
 /* 실시간 GPIO 상태 추적 */
 .gpio_state_view {width: 100%;display: flex;flex-wrap: wrap;margin-top: 50px;}
 .gpio_state_view article {display: flex;width: 100%;height: 80px;}
-.gpio_state_view article div {display: flex;flex-direction: column; width: 100px;height: 100%;border: 1px solid #000; border-collapse: collapse;}
+.gpio_state_view article div {display: flex;flex-direction: column; width: 150px;height: 100%;border: 1px solid #000; border-collapse: collapse;}
 .gpio_state_view article div:first-child { width: 200px; height: 100%; display: flex;align-items: center;justify-content: center; }
 .gpio_state_view article div p {width: 100%; height: 50%;text-align: right;display: flex;align-items: center;justify-content: center;padding-right: 4px;}
 .gpio_state_view article div p:last-child {margin: auto; width: 24px; height: 24px; text-align: right;display: flex;align-items: center;justify-content: center;padding-right: 4px; border-radius: 32px;}.

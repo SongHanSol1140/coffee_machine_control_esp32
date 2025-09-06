@@ -8,11 +8,11 @@
 // (3.3V측) 고정저항
 static constexpr float SERIES_RESISTOR     = 10000.0f;  // Ω
 // NTC 정격값(25°C에서의 저항)
-static constexpr float NOMINAL_RESISTANCE  = 10000.0f;  // Ω @ 25°C
+static constexpr float NOMINAL_RESISTANCE  = 50000.0f;  // Ω @ 25°C
 // NTC 정격 온도
 static constexpr float NOMINAL_TEMPERATURE = 25.0f;     // °C
 // 베타 계수 (데이터시트 B값)
-static constexpr float BETA_COEFFICIENT    = 3950.0f;
+static constexpr float BETA_COEFFICIENT    = 3976.0f;
 // ESP32 ADC 설정
 static constexpr int   ADC_MAX             = 4095;      // 12-bit
 static constexpr int   SAMPLES             = 5;        // 샘플 평균

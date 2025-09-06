@@ -4,6 +4,10 @@
 #include "machineRunning.h"
 #include "MCP23017.h"
 
+// PWM 제어 함수와 상태 플래그를 사용하기 위해 추가 헤더 포함
+#include "GearPump_PWM.h"
+#include "Heater.h"
+
 // FreeRTOS 헤더 추가
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
@@ -11,8 +15,10 @@
 // 와이파이 정보
 const char* wifi_ssid = "nnx-factory 3 2.4G";
 const char* wifi_password = "$@43skshslrtm";
-const IPAddress wifiIP(192, 168, 0, 231); // 접속할 고정 IP 설정(이미 사용중일 경우 동작 에러날 수 있음)
-const IPAddress gateway(192, 168, 0, 1);
+const IPAddress wifiIP(192, 168, 40, 27); // 접속할 고정 IP 설정(이미 사용중일 경우 동작 에러날 수 있음)
+const IPAddress gateway(192, 168, 40, 1);
+// const IPAddress wifiIP(192, 168, 0, 231); // 접속할 고정 IP 설정(이미 사용중일 경우 동작 에러날 수 있음)
+// const IPAddress gateway(192, 168, 0, 1);
 const IPAddress subnet(255, 255, 255, 0);
 const IPAddress dns(192, 168, 0, 1);
 
@@ -81,6 +87,14 @@ static String buildMeasurementJson() {
   doc["GPIO10"] = expanderGPIO10 ? 1 : 0;
    // CT 아날로그 값 전송
    doc["ctAnalogValue"] = ctAnalogValue;
+
+  // === PWM 상태값 추가 ===
+  // 기어펌프 PWM(ESP32 GPIO32)와 히터2 PWM(ESP32 GPIO33)의 상태를 전송합니다.
+  // gearPumpOn과 heater2On는 각각 GearPump_PWM.cpp와 Heater.cpp에서 PWM을 켜거나
+  // 끌 때 갱신되는 상태 플래그입니다. 출력값이 계산되어도 실제로 PWM을
+  // 출력하지 않는 경우를 구분하기 위해 플래그를 사용합니다.
+  doc["PWM32"] = gearPumpOn ? 1 : 0;
+  doc["PWM33"] = heater2On ? 1 : 0;
   String s;
   serializeJson(doc, s);
   return s;
@@ -249,7 +263,7 @@ void wifiSetup() {
 
     // 미사용시 주석처리
     // 고정 IP 설정
-    if (!WiFi.config(wifiIP, gateway, subnet)) {
+    if (!WiFi.config(wifiIP, gateway, subnet, dns)) {
       Serial.println("STA Failed to configure");
     }
     // 고정IP 설정 끝
@@ -374,6 +388,66 @@ void startWebServer() {
     Serial.println("Start_Cleaning");
     req->send(200, "application/json", buildStateJson());
     xTaskCreatePinnedToCore(cleaningTask, "CleaningTask", 4096, NULL, 1, NULL, 1);
+  });
+
+
+  // 사용자 정의 GPIO/PWM 토글 엔드포인트를 정의합니다.
+  // 이 엔드포인트는 server.begin() 이전에 등록해야 합니다.
+  server.on("/api/gpio/toggle", HTTP_POST, [](AsyncWebServerRequest* req) {
+    if (req->hasParam("name", true)) {
+      String name = req->getParam("name", true)->value();
+      // ESP32 GPIO25 제어
+      if (name == "ESP32_GPIO25") {
+        bool current = digitalRead(Heater_1_GPIO_PIN);
+        bool newVal  = !current;
+        digitalWrite(Heater_1_GPIO_PIN, newVal);
+        // 전역 상태 변수 갱신
+        ESP32_GPIO25 = newVal;
+      } else if (name.startsWith("GPIO")) {
+        // 확장자 핀. 이름에서 숫자 추출 (GPIO1 ~ GPIO10)
+        int pinNum = name.substring(4).toInt();
+        if (pinNum >= 1 && pinNum <= 10) {
+          bool current = expanderReadForDoc(pinNum);
+          bool newVal  = !current;
+          expanderWriteForDoc(pinNum, newVal ? HIGH : LOW);
+          // 관련 전역 상태 변수 갱신
+          switch (pinNum) {
+            case 1: expanderGPIO1 = newVal; break;
+            case 2: expanderGPIO2 = newVal; break;
+            case 3: expanderGPIO3 = newVal; break;
+            case 4: expanderGPIO4 = newVal; break;
+            case 5: expanderGPIO5 = newVal; break;
+            case 6: expanderGPIO6 = newVal; break;
+            case 7: expanderGPIO7 = newVal; break;
+            case 8: expanderGPIO8 = newVal; break;
+            case 9: expanderGPIO9 = newVal; break;
+            case 10: expanderGPIO10 = newVal; break;
+          }
+        }
+      } else if (name == "PWM32") {
+        // 기어펌프 PWM 토글
+        gearPumpOn = !gearPumpOn;
+        if (gearPumpOn) {
+          GearPump_PWM_ON();
+        } else {
+          GearPump_PWM_OFF();
+        }
+      } else if (name == "PWM33") {
+        // 히터2 PWM 토글
+        heater2On = !heater2On;
+        if (heater2On) {
+          // 현재 계산된 PWM 값으로 SSR를 켭니다.
+          Heater2_PWM_Write();
+        } else {
+          Heater2_PWM_ForceOff();
+        }
+      }
+      // 토글 후 측정 JSON을 반환하여 프론트엔드가 갱신하도록 합니다.
+      String json = buildMeasurementJson();
+      req->send(200, "application/json", json);
+    } else {
+      req->send(400, "text/plain", "Missing name parameter");
+    }
   });
 
   server.begin();

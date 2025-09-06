@@ -86,3 +86,8 @@ bool expanderGPIO8 = false;
 // PB
 bool expanderGPIO9 = false;
 bool expanderGPIO10 = false;
+
+// PWM 상태 플래그 초기화
+// 기어펌프와 히터2 PWM 상태를 추적합니다.
+bool gearPumpOn = false;
+bool heater2On = false;
