@@ -51,6 +51,7 @@ void createValueReset() {
 }
 
 void createEspresso() {
+  // 2.
   if (!checkStart()) {
     Serial.println("Create Espresso: checkStart is false");
     return;
@@ -63,8 +64,8 @@ void createEspresso() {
   };
 
 
-  // GPIO Expander #7 High (추출 구동 시작)
-  expanderWriteForDoc(7, HIGH);
+  // GPIO Expander #6 High (추출 구동 시작)
+  expanderWriteForDoc(6, HIGH);
   // 히터 제어: isHot인 경우에만 켜고, isCold이면 히터를 사용하지 않음
   if (isHot) {
     digitalWrite(Heater_1_GPIO_PIN, HIGH);
@@ -88,7 +89,7 @@ void createEspresso() {
   }
 
   // GPIO Expander #8 High (추출 완료 후 배출 시작)
-  expanderWriteForDoc(8, HIGH);
+  expanderWriteForDoc(5, HIGH);
   Serial.println("Tast Check 3");
   // 유량계 #1 출구 값이 limit 퍼센트까지 도달할 때까지 대기
   float limitVolume = (float)e_ml_set * ((float)h2_limit_per / 100.0f);
@@ -120,8 +121,8 @@ void createEspresso() {
   // 기어펌프 PWM OFF
   GearPump_PWM_OFF();
   // expander #7, #8 출력 정지
-  expanderWriteForDoc(7, LOW);
-  expanderWriteForDoc(8, LOW);
+  expanderWriteForDoc(6, LOW);
+  expanderWriteForDoc(5, LOW);
 
   // 제조 완료 상태
   isWorking = false;
@@ -142,9 +143,9 @@ void createAmericano() {
   }
 
   // 3. 에스프레소 출구 바이패스 ON
-  expanderWriteForDoc(6, HIGH);
+  expanderWriteForDoc(1, HIGH);
   // 4. 혼합 입구 펌프 ON
-  expanderWriteForDoc(9, HIGH);
+  expanderWriteForDoc(8, HIGH);
 
   // 5. 입력 유량계가 에스프레소 설정값 도달까지 대기
   while (YF_S402B_inputFlow <= (float)a_e_ml_set) {
@@ -157,7 +158,7 @@ void createAmericano() {
   }
 
   // 6. 혼합 입구 펌프 OFF
-  expanderWriteForDoc(9, LOW);
+  expanderWriteForDoc(8, LOW);
   // 7. 입력 유량계 누적값 초기화
   YF_S402B_inputFlow = 0;
 
@@ -223,7 +224,7 @@ void createAmericano() {
       unsigned long remaining = totalMs - (millis() - cycleStart);
       if (onMs > remaining) onMs = remaining;
 
-      expanderWriteForDoc(5, HIGH);
+      expanderWriteForDoc(7, HIGH);
       unsigned long tStart = millis();
       while (millis() - tStart < onMs) {
         if (emergencyStop || currentAmpere > emergencyA) {
@@ -235,7 +236,7 @@ void createAmericano() {
       }
 
       // OFF
-      expanderWriteForDoc(5, LOW);
+      expanderWriteForDoc(7, LOW);
       unsigned long offMs = (unsigned long)inhale_off_time * 1000UL;
       remaining = totalMs - (millis() - cycleStart);
       if (offMs > remaining) offMs = remaining;
@@ -251,11 +252,11 @@ void createAmericano() {
       }
     }
     // 종료 시 OFF 보장
-    expanderWriteForDoc(5, LOW);
+    expanderWriteForDoc(7, LOW);
   }
 
   // 16. 순환 3Way Valve ON
-  expanderWriteForDoc(7, HIGH);
+  expanderWriteForDoc(6, HIGH);
 
   // 17. 드레인 시간 대기
   {
@@ -272,7 +273,7 @@ void createAmericano() {
   }
 
   // 18. 출구 3Way Valve ON
-  expanderWriteForDoc(8, HIGH);
+  expanderWriteForDoc(5, HIGH);
 
   // 19. 히터 정지 유량비율까지 대기
   {
@@ -308,9 +309,9 @@ void createAmericano() {
 
   // 22~25. 기어펌프/밸브 OFF
   GearPump_PWM_OFF();
-  expanderWriteForDoc(7, LOW);
-  expanderWriteForDoc(8, LOW);
   expanderWriteForDoc(6, LOW);
+  expanderWriteForDoc(5, LOW);
+  expanderWriteForDoc(1, LOW);
 
   // 26. 작업 완료
   isWorking = false;
@@ -331,9 +332,9 @@ void createCafeLatte() {
   };
 
   // 3. GPIO Expander #6 ON (에스프레소 출구 바이패스)
-  expanderWriteForDoc(6, HIGH);
+  expanderWriteForDoc(1, HIGH);
   // 4. GPIO Expander #9 ON(혼합 입구 펌프)
-  expanderWriteForDoc(9, HIGH);
+  expanderWriteForDoc(8, HIGH);
   // 5. GPIO#19 유량계 총 유량 > 카페라떼 에스프레소 설정값까지 대기)
   while (YF_S402B_inputFlow <= (float)c_e_ml_set) {
     if (emergencyStop || currentAmpere > emergencyA) {
@@ -344,7 +345,7 @@ void createCafeLatte() {
     delay(10);
   }
   // 6. GPIO Expander #9 OFF(혼합 입구 펌프)
-  expanderWriteForDoc(9, LOW);
+  expanderWriteForDoc(8, LOW);
   // 7. GPIO#19 유량계 누적값 초기화
   YF_S402B_inputFlow = 0;
   // 8. GPIO Expander #2 ON(우유 전자변)
@@ -404,7 +405,7 @@ void createCafeLatte() {
       unsigned long onMs = (unsigned long)inhale_on_time * 1000UL;
       unsigned long remaining = totalMs - (millis() - cycleStart);
       if (onMs > remaining) onMs = remaining;
-      expanderWriteForDoc(5, HIGH);
+      expanderWriteForDoc(7, HIGH);
       unsigned long tStart = millis();
       while (millis() - tStart < onMs) {
         if (emergencyStop || currentAmpere > emergencyA) {
@@ -414,7 +415,7 @@ void createCafeLatte() {
         }
         delay(10);
       }
-      expanderWriteForDoc(5, LOW);
+      expanderWriteForDoc(7, LOW);
       unsigned long offMs = (unsigned long)inhale_off_time * 1000UL;
       remaining = totalMs - (millis() - cycleStart);
       if (offMs > remaining) offMs = remaining;
@@ -428,10 +429,10 @@ void createCafeLatte() {
         delay(10);
       }
     }
-    expanderWriteForDoc(5, LOW);
+    expanderWriteForDoc(7, LOW);
   }
   // 16. GPIO Expander #7 ON (순환 3Way Valve)
-  expanderWriteForDoc(7, HIGH);
+  expanderWriteForDoc(6, HIGH);
   // 17. 드레인 시간동안 대기
   {
     unsigned long startMs = millis();
@@ -446,7 +447,7 @@ void createCafeLatte() {
     }
   }
   // 18. GPIO Expander #8 ON(출구 3Way Valve)
-  expanderWriteForDoc(8, HIGH);
+  expanderWriteForDoc(5, HIGH);
   // 19. GPIO#18 유량계 총유량 > (카페라떼 에스프레소 설정값 + 카페라떼 우유 설정값) * (히터 정지 유량비율(%) / 100)까지 대기
   {
     float limitVolume = (float)(c_e_ml_set + c_m_ml_set) * ((float)h2_limit_per / 100.0f);
@@ -479,11 +480,11 @@ void createCafeLatte() {
   // 23. GPIO32 PWM출력 OFF (기어펌프)
   GearPump_PWM_OFF();
   // 24. GPIO Expander #7 OFF (순환 3Way Valve)
-  expanderWriteForDoc(7, LOW);
-  // 25. GPIO Expander #8 OFF (출구 3Way Valve)
-  expanderWriteForDoc(8, LOW);
-  // 26. GPIO Expander #6 OFF (에스프레소 출구 바이패스)
   expanderWriteForDoc(6, LOW);
+  // 25. GPIO Expander #8 OFF (출구 3Way Valve)
+  expanderWriteForDoc(5, LOW);
+  // 26. GPIO Expander #6 OFF (에스프레소 출구 바이패스)
+  expanderWriteForDoc(1, LOW);
   // 27. 작업 완료
   isWorking = false;
   Serial.println("Create CafeLatte End");
@@ -501,9 +502,9 @@ void createCleaning() {
   };
 
   // 3. GPIO Expander #3 ON(청소 전자변)
-  expanderWriteForDoc(3, HIGH);
+  expanderWriteForDoc(4, HIGH);
   // 4. GPIO Expander #9 ON(혼합탱크 입구 펌프)
-  expanderWriteForDoc(9, HIGH);
+  expanderWriteForDoc(8, HIGH);
   // 5. GPIO33 ON(기어펌프)
   GearPump_PWM_ON();
   // 6. 청소 시작후 설정된 청소 전환시간 비교후 시간이 일치하면
@@ -522,13 +523,13 @@ void createCleaning() {
     delay(10);
   }
   // 7. GPIO Expander #3 OFF(청소 전자변)
-  expanderWriteForDoc(3, LOW);
+  expanderWriteForDoc(4, LOW);
   // 8. GPIO Expander #9 OFF(혼합탱크 입구 펌프)
-  expanderWriteForDoc(9, LOW);
+  expanderWriteForDoc(8, LOW);
   // 9. GPIO Expander #7 ON(혼합 3Way Valve)
-  expanderWriteForDoc(7, HIGH);
+  expanderWriteForDoc(6, HIGH);
   // 10. GPIO Expander #8 ON(출구 3Way Valve)
-  expanderWriteForDoc(8, HIGH);
+  expanderWriteForDoc(5, HIGH);
 
   // 11. 청소 시작후 설정된 청소 전체 시간 비교후 시간이 일치하면
   while (millis() - startMs < totalMs) {
@@ -542,11 +543,9 @@ void createCleaning() {
   // 12. GPIO33 OFF(기어펌프)
   GearPump_PWM_OFF();
   // 13. GPIO Expander #7 OFF(혼합 3Way Valve)
-  expanderWriteForDoc(7, LOW);
+  expanderWriteForDoc(6, LOW);
   // 14. GPIO Expander #8 OFF(출구 3Way Valve)
-  expanderWriteForDoc(8, LOW);
-  // 15. GPIO Expander #3 OFF(청소 전자변)
-  expanderWriteForDoc(3, LOW);
+  expanderWriteForDoc(5, LOW);
   // 16. 작업 완료
   // 작업 완료
   isWorking = false;

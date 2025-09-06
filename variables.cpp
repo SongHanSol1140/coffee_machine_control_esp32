@@ -26,8 +26,8 @@ float YF_S402B_outputFlow = 0;
 float YF_S402B_inputFlow  = 0;
 
 // NTC 온도센서
-const int Heater_1_NTC_PIN = 34;
-const int Heater_2_NTC_PIN = 35;
+const int Heater_1_NTC_PIN = 35;
+const int Heater_2_NTC_PIN = 34;
 float Heater_1_NTC_TEMP = 0;
 float Heater_2_NTC_TEMP = 0;
 
