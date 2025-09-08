@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>ESP32 Coffee Controller</title>
+  <!-- 분리된 스타일시트 로딩 -->
+  <!-- <link rel="stylesheet" href="style.css" /> -->
+  <link rel="stylesheet" href="style.css?v=<%= Date.now() %>" />
+
+</head>
+
+<body>
+  <h2>시스템 설정</h2>
+  <section class="system_button">
+    <button class="btn isRunningButton">System On</button>
+    <!-- 긴급 정지 버튼은 기본적으로 회색이며 isRunning 상태에 따라 빨간색으로 변합니다 -->
+    <button class="btn emergencyStopButton">긴급 정지</button>
+    <button class="btn hotButton">HOT</button>
+    <button class="btn coldButton">COLD</button>
+  </section>
+
+  <section class="setting_section">
+    <article class="title">
+      <h2>음료 제조</h2>
+      <div class="current_value_view">
+        <div>
+          <p>히터 #1 온도(SSR)</p>
+          <p class="heater_temperature_setting">0℃</p>
+        </div>
+        <div>
+          <p>히터 #2 온도(Relay)</p>
+          <p class="heater_temperature_setting">0℃</p>
+        </div>
+        <div>
+          <p>유량계 #1 출구</p>
+          <p class="yf_s402b_output_flow">0ml</p>
+        </div>
+        <div>
+          <p>유량계 #2 입구</p>
+          <p class="yf_s402b_input_flow">0ml</p>
+        </div>
+        <div>
+          <p>히터 #2 출력(0-255)</p>
+          <p class="Heater_2_PWM_output_value">0</p>
+        </div>
+      </div>
+    </article>
+    <!-- 실시간 측정값 뷰어 -->
+
+    <!-- 에스프레소 설정 -->
+    <article class="setting_block">
+      <div class="menu_name">에스프레소</div>
+      <div class="menu_block_input">
+        <div>에스프레소 양</div>
+        <input type="number" class="e_ml_set" placeholder="ml" value="0">
+      </div>
+      <div class="menu_block_input">
+        <div>온도</div>
+        <input type="number" class="e_tmp_set" placeholder="℃" value="0">
+      </div>
+      <button class="running_start espresso_start">제조 시작</button>
+    </article>
+    <!-- 아메리카노 설정 -->
+    <article class="setting_block">
+      <div class="menu_name">아메리카노</div>
+      <div class="menu_block_input">
+        <div>에스프레소 양</div>
+        <input type="number" class="a_e_ml_set" placeholder="ml" value="0">
+      </div>
+      <div class="menu_block_input">
+        <div>물 양</div>
+        <input type="number" class="a_w_ml_set" placeholder="ml" value="0">
+      </div>
+      <div class="menu_block_input">
+        <div>온도</div>
+        <input type="number" class="a_tmp_set" placeholder="℃" value="0">
+      </div>
+      <button class="running_start americano_start">제조 시작</button>
+    </article>
+    <!-- 카페라떼 설정 -->
+    <article class="setting_block">
+      <div class="menu_name">카페라떼</div>
+      <div class="menu_block_input">
+        <div>에스프레소 양</div>
+        <input type="number" class="c_e_ml_set" placeholder="ml" value="0">
+      </div>
+      <div class="menu_block_input">
+        <div>우유 양</div>
+        <input type="number" class="c_m_ml_set" placeholder="ml" value="0">
+      </div>
+      <div class="menu_block_input">
+        <div>온도</div>
+        <input type="number" class="c_tmp_set" placeholder="℃" value="0">
+      </div>
+      <button class="running_start cafelatte_start">제조 시작</button>
+    </article>
+    <!-- 청소 설정 -->
+    <article class="setting_block">
+      <div class="menu_name">청소</div>
+      <div class="menu_block_input">
+        <div>청소 시간</div>
+        <input type="number" class="clean_time" placeholder="초" value="0">
+      </div>
+      <div class="menu_block_input">
+        <div>전체 청소 시간</div>
+        <input type="number" class="clean_time_all" placeholder="초" value="0">
+      </div>
+      <button class="running_start cleaning_start">청소 시작</button>
+    </article>
+    <!-- 공기 흡입 설정 -->
+    <article class="setting_block">
+      <div class="menu_name">공기 흡입량</div>
+      <div class="menu_block_input">
+        <div>시작 후 대기(sec)</div>
+        <input type="number" class="inhale_w_time" placeholder="초" value="0">
+      </div>
+      <div class="menu_block_input">
+        <div>흡입 시간(sec)</div>
+        <input type="number" class="inhale_time" placeholder="초" value="0">
+      </div>
+      <div class="menu_block_input">
+        <div>ON 시간(sec)</div>
+        <input type="number" class="inhale_on_time" placeholder="초" value="0">
+      </div>
+      <div class="menu_block_input">
+        <div>OFF 시간(sec)</div>
+        <input type="number" class="inhale_off_time" placeholder="초" value="0">
+      </div>
+    </article>
+    <!-- 혼합 시간 설정 -->
+    <article class="setting_block">
+      <div class="menu_name">혼합 시간</div>
+      <div class="menu_block_input">
+        <div>시간(sec)</div>
+        <input type="number" class="shake_time" placeholder="초" value="0">
+      </div>
+    </article>
+    <!-- 기어펌프 출력 설정 -->
+    <article class="setting_block">
+      <div class="menu_name">기어펌프 출력 %</div>
+      <div class="menu_block_input">
+        <div>출력 %(0~100)</div>
+        <input type="number" class="pump_out_per" placeholder="%" min="0" max="100" value="0">
+      </div>
+      <div>기어펌프 사용시 설정한 %로 PWM출력 고정</div>
+    </article>
+    <!-- PID 제어 값 설정 -->
+    <article class="setting_block">
+      <div class="menu_name">온도 PID 제어</div>
+
+      <div class="menu_block_input">
+        <div>목표 온도 설정</div>
+        <!-- 정수만 필요하다면 기존 number 그대로, 소수점도 허용하려면 아래와 같이 -->
+        <input type="text" class="c_tmp decimal-input" placeholder="℃" value="0" pattern="^-?\\d+(\\.\\d+)?$"
+          inputmode="decimal" autocomplete="off">
+      </div>
+
+      <div class="menu_block_input">
+        <div>P</div>
+        <input type="text" class="Heter_PID_P decimal-input" placeholder="P" value="0" pattern="^-?\\d+(\\.\\d+)?$"
+          inputmode="decimal" autocomplete="off">
+      </div>
+
+      <div class="menu_block_input">
+        <div>I</div>
+        <input type="text" class="Heter_PID_I decimal-input" placeholder="I" value="0" pattern="^-?\\d+(\\.\\d+)?$"
+          inputmode="decimal" autocomplete="off">
+      </div>
+
+      <div class="menu_block_input">
+        <div>D</div>
+        <input type="text" class="Heter_PID_D decimal-input" placeholder="D" value="0" pattern="^-?\\d+(\\.\\d+)?$"
+          inputmode="decimal" autocomplete="off">
+      </div>
+    </article>
+    <!-- CT 긴급 정지 설정 -->
+    <article class="setting_block">
+      <div class="menu_name">5A CT sensor</div>
+      <div class="menu_block_input">
+        <div>위험 Ampere 설정</div>
+        <input type="number" class="emergencyA" placeholder="암페어" value="0">
+      </div>
+      <div class="menu_block_input">
+        <div>current A</div>
+        <p class="current_ampere">0</p>
+      </div>
+      <div class="menu_block_input">
+        <div>current Analog</div>
+        <p class="ctAnalogValue">0</p>
+      </div>
+      <div class="menu_block_input">
+        <div>Analog 보정치</div>
+        <input type="number" class="ctAdcZero" placeholder="값" value="0">
+      </div>
+    </article>
+    <p>측정된 current Analog값만큼 Analog 보정치를 설정하면 currentA 계산</p>
+    <!-- 드레인 시간 설정 -->
+    <article class="setting_block">
+      <div class="menu_name">드레인 시간</div>
+      <div class="menu_block_input">
+        <div>드레인 시간(sec)</div>
+        <!-- drain_time 값을 입력하여 서버에 전송 -->
+        <input type="number" class="drain_time" placeholder="초" value="0">
+      </div>
+    </article>
+    <!-- SSR 히터 종료 유량 설정 -->
+    <article class="setting_block">
+      <div class="menu_name">SSR 히터</div>
+      <div class="menu_block_input">
+        <div>히터 Off 유량 %</div>
+        <!-- h2_limit_per 값을 입력하여 서버에 전송 -->
+        <input type="number" class="h2_limit_per" placeholder="%" min="0" max="100" value="0">
+      </div>
+      <div> SSR 제어 히터 종료 조건 : 필요 유량 * (설정값 / 100)</div>
+    </article>
+
+    <!-- 히터 위험 온도 설정 -->
+    <article class="setting_block">
+      <div class="menu_name">히터 위험 온도</div>
+      <div class="menu_block_input">
+        <div>히터 #1 위험 온도(℃)</div>
+        <input type="number" class="h1_emer_tmp" placeholder="℃" value="0" step="any" inputmode="decimal"
+          autocomplete="off">
+      </div>
+      <div class="menu_block_input">
+        <div>히터 #2 위험 온도(℃)</div>
+        <input type="number" class="h2_emer_tmp2" placeholder="℃" value="0" step="any" inputmode="decimal"
+          autocomplete="off">
+      </div>
+      <div>설정된 온도 이상에서 히터 출력이 일시적으로 중단되며, 일정 온도 이하로 내려가면 자동으로 재개됩니다.</div>
+    </article>
+    </article>
+
+
+    <section class="gpio_state_view">
+      <article>
+        <div>ESP32 GPIO</div>
+        <div>
+          <p>히터#2 Relay</p>
+          <p class="ESP32_GPIO25 indicator"></p>
+        </div>
+      </article>
+      <article>
+        <!-- GPIO 1~8 -->
+        <div>MCP23017 PA</div>
+        <div>
+          <p>에스프레소</p>
+          <p>커피 제조</p>
+          <p class="GPIO1 indicator"></p>
+        </div>
+        <div>
+          <p>우유</p>
+          <p class="GPIO2 indicator"></p>
+        </div>
+        <div>
+          <p>시럽</p>
+          <p class="GPIO3 indicator"></p>
+        </div>
+        <div>
+          <p>청소</p>
+          <p class="GPIO4 indicator"></p>
+        </div>
+        <div>
+          <p>드레인</p>
+          <p>음료 출구</p>
+          <p class="GPIO5 indicator"></p>
+        </div>
+        <div>
+          <p>순환(섞기)</p>
+          <p>출구로 내보내기</p>
+          <p class="GPIO6 indicator"></p>
+        </div>
+        <div>
+          <p>Air 전자변</p>
+          <p class="GPIO7 indicator"></p>
+        </div>
+        <div>
+          <p>혼합탱크 펌프</p>
+          <p class="GPIO8 indicator"></p>
+        </div>
+      </article>
+      <article>
+        <div>MCP23017 PB</div>
+        <div>
+          <p>향기 순환 펌프</p>
+          <p class="GPIO9 indicator"></p>
+        </div>
+        <div>
+          <p>정수물 전자변</p>
+          <p class="GPIO10 indicator"></p>
+        </div>
+      </article>
+
+      <!-- PWM 출력 상태 표시 (ESP32 GPIO32: 기어펌프, GPIO33: 히터2 SSR) -->
+      <article>
+        <div>PWM Output</div>
+        <div>
+          <p>PWM32</p>
+          <!-- 기어펌프 상태 표시 -->
+          <p class="PWM32 indicator"></p>
+        </div>
+        <div>
+          <p> 히터#1 SSR</p>
+          <!-- 히터2 SSR 상태 표시 -->
+          <p class="PWM33 indicator"></p>
+        </div>
+      </article>
+    </section>
+    <!-- 프론트엔드 로직 -->
+    <script>
+      // 간단한 선택자 헬퍼 함수들
+      const $ = sel => document.querySelector(sel);
+      const $$ = sel => document.querySelectorAll(sel);
+
+      // 버튼 캐싱
+      const btnRun = $('.isRunningButton');
+      const btnEmg = $('.emergencyStopButton');
+      const btnHot = $('.hotButton');
+      const btnCold = $('.coldButton');
+
+      /**
+       * 서버에서 받은 상태에 따라 UI를 갱신합니다.
+       * isRunning이 true이면 긴급정지 버튼도 빨간색(on 클래스)으로 표시됩니다.
+       */
+      function applyStateUI(state) {
+        btnRun.classList.toggle('on', !!state.isRunning);
+        btnHot.classList.toggle('on', !!state.isHot);
+        btnCold.classList.toggle('on', !!state.isCold);
+        // 시스템이 작동 중(isRunning)일 때만 긴급정지 버튼을 빨간색으로 표시
+        btnEmg.classList.toggle('on', !!state.isWorking);
+      }
+
+      // 측정값 및 설정값을 주기적으로 가져오는 함수들
+      async function fetchState() {
+        try {
+          const r = await fetch('/api/state', { cache: 'no-store' });
+          const d = await r.json();
+          applyStateUI(d);
+        } catch (e) { }
+      }
+      async function fetchMeasurement() {
+        try {
+          const r = await fetch('/api/measurement', { cache: 'no-store' });
+          const d = await r.json();
+          // 실시간 온도 및 유량, PWM 값을 표시
+          const tempEls = $$('.heater_temperature_setting');
+          tempEls[0].innerText = d.Heater_1_NTC_TEMP.toFixed(1) + '℃';
+          tempEls[1].innerText = d.Heater_2_NTC_TEMP.toFixed(1) + '℃';
+          $('.yf_s402b_output_flow').innerText = d.YF_S402B_outputFlow.toFixed(1) + 'ml';
+          $('.yf_s402b_input_flow').innerText = d.YF_S402B_inputFlow.toFixed(1) + 'ml';
+          $('.current_ampere').innerText = d.currentAmpere.toFixed(2);
+          $('.Heater_2_PWM_output_value').innerText = d.Heater_2_PWM_output_value;
+          $('.ctAnalogValue').innerText = parseInt(d.ctAnalogValue);
+          // GPIO 상태 표시 업데이트
+          const gpioKeys = ['ESP32_GPIO25', 'GPIO1', 'GPIO2', 'GPIO3', 'GPIO4', 'GPIO5', 'GPIO6', 'GPIO7', 'GPIO8', 'GPIO9', 'GPIO10', 'PWM32', 'PWM33'];
+          gpioKeys.forEach(key => {
+            const el = document.querySelector('.' + key);
+            if (el) {
+              el.textContent = ''; // 숫자 제거
+              // true/1이면 on, false/0이면 off
+              if (d[key]) {
+                el.classList.remove('off');
+                el.classList.add('on');
+              } else {
+                el.classList.remove('on');
+                el.classList.add('off');
+              }
+            }
+          });
+        } catch (e) { }
+      }
+      async function fetchSettings() {
+        try {
+          const r = await fetch('/api/settings', { cache: 'no-store' });
+          const d = await r.json();
+          // 각 설정값을 입력란에 반영합니다.
+          $('.e_ml_set').value = d.e_ml_set;
+          $('.e_tmp_set').value = d.e_tmp_set;
+          $('.a_e_ml_set').value = d.a_e_ml_set;
+          $('.a_w_ml_set').value = d.a_w_ml_set;
+          $('.a_tmp_set').value = d.a_tmp_set;
+          $('.c_e_ml_set').value = d.c_e_ml_set;
+          $('.c_m_ml_set').value = d.c_m_ml_set;
+          // c_tmp_set은 여러 위치에서 사용될 수 있으므로 모두 갱신합니다.
+          document.querySelectorAll('.c_tmp_set').forEach(el => {
+            el.value = d.c_tmp_set;
+          });
+          $('.clean_time').value = d.clean_time;
+          $('.clean_time_all').value = d.clean_time_all;
+          $('.inhale_w_time').value = d.inhale_w_time;
+          $('.inhale_time').value = d.inhale_time;
+          $('.inhale_on_time').value = d.inhale_on_time;
+          $('.inhale_off_time').value = d.inhale_off_time;
+          $('.shake_time').value = d.shake_time;
+          $('.pump_out_per').value = d.pump_out_per;
+          $('.drain_time').value = d.drain_time;
+          $('.h2_limit_per').value = d.h2_limit_per;
+          $('.emergencyA').value = d.emergencyA;
+          $('.Heter_PID_P').value = d.Heter_PID_P;
+          $('.Heter_PID_I').value = d.Heter_PID_I;
+          $('.Heter_PID_D').value = d.Heter_PID_D;
+          $('.ctAdcZero').value = d.ctAdcZero;
+
+          // PID 목표 온도(c_tmp) 값을 모든 관련 입력란에 반영합니다.
+          if (typeof d.c_tmp !== 'undefined') {
+            document.querySelectorAll('.c_tmp').forEach(el => {
+              el.value = d.c_tmp;
+            });
+          }
+
+          // 히터 위험 온도 설정값 반영
+          if (typeof d.h1_emer_tmp !== 'undefined') {
+            $('.h1_emer_tmp').value = d.h1_emer_tmp;
+          }
+          if (typeof d.h2_emer_tmp2 !== 'undefined') {
+            $('.h2_emer_tmp2').value = d.h2_emer_tmp2;
+          }
+        } catch (e) { }
+      }
+
+      // 주기적으로 상태, 측정값, 설정값을 갱신
+      setInterval(fetchState, 500);
+      setInterval(fetchMeasurement, 500);
+      setInterval(fetchSettings, 3000);
+      // 페이지 로드시 즉시 호출
+      fetchState(); fetchMeasurement(); fetchSettings();
+
+      /**
+       * GPIO 및 PWM 출력을 토글하는 함수.
+       * name 파라미터로 ESP32_GPIO25, GPIO1~GPIO10, PWM32, PWM33 중 하나를 전달합니다.
+       */
+      function toggleGPIOOutput(name) {
+        const params = new URLSearchParams({ name });
+        fetch('/api/gpio/toggle', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: params.toString()
+        }).then(() => {
+          // 토글 후 즉시 측정값을 다시 가져와 UI를 갱신합니다.
+          fetchMeasurement();
+        });
+      }
+
+      // GPIO/PWM 상태 표시 원을 클릭했을 때 해당 출력을 토글하도록 이벤트 리스너를 추가합니다.
+      function bindIndicatorToggle() {
+        const indicators = document.querySelectorAll('.gpio_state_view .indicator');
+        indicators.forEach(ind => {
+          ind.style.cursor = 'pointer';
+          ind.addEventListener('click', (e) => {
+            // indicator 요소의 클래스 리스트에서 indicator를 제외한 첫 번째 클래스를 이름으로 사용합니다.
+            const classes = Array.from(e.currentTarget.classList);
+            const key = classes.find(c => c !== 'indicator');
+            if (key) {
+              toggleGPIOOutput(key);
+            }
+          });
+        });
+      }
+      // DOM이 준비되면 바인딩을 설정합니다.
+      document.addEventListener('DOMContentLoaded', bindIndicatorToggle);
+
+      /**
+       * 서버의 설정값을 업데이트하는 함수.
+       * name과 value를 파라미터로 전송합니다.
+       */
+      function updateSetting(name, value) {
+        const params = new URLSearchParams({ name, value });
+        fetch('/api/updateSetting', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: params.toString()
+        }).then(() => {
+          // 값이 변경된 뒤 최신 설정을 다시 가져옵니다.
+          fetchSettings();
+        });
+      }
+
+
+      // 숫자와 소수점만 허용하는 입력란 목록
+      const decimalFields = [
+        'Heter_PID_P',
+        'Heter_PID_I',
+        'Heter_PID_D',
+        'c_tmp',
+        'h1_emer_tmp',
+        'h2_emer_tmp2',
+        'emergencyA'
+      ];
+      // 설정 입력 항목을 바인딩하여 값 변경 시 서버로 전송하도록 합니다.
+      const bindings = [
+        'e_ml_set', 'e_tmp_set',
+        'a_e_ml_set', 'a_w_ml_set', 'a_tmp_set',
+        'c_e_ml_set', 'c_m_ml_set', 'c_tmp_set',
+        'clean_time', 'clean_time_all',
+        'inhale_w_time', 'inhale_time', 'inhale_on_time', 'inhale_off_time',
+        'shake_time', 'pump_out_per', 'drain_time', 'h2_limit_per',
+        'emergencyA', 'Heter_PID_P', 'Heter_PID_I', 'Heter_PID_D',
+        'ctAdcZero',
+        // 히터 위험 온도 설정값
+        'h1_emer_tmp', 'h2_emer_tmp2'
+        , 'c_tmp'
+      ];
+      // 기존 바인딩 코드에서 decimalFields는 즉시 전송하지 않고 change 시에만 전송
+      bindings.forEach(cls => {
+        const els = document.querySelectorAll('.' + cls);
+        els.forEach(el => {
+          if (decimalFields.includes(cls)) {
+            // 숫자와 소수점만 남기고 나머지는 제거, '.'은 한 번만 허용
+            el.addEventListener('input', e => {
+              let v = e.target.value;
+              // 숫자, 마침표만 유지
+              v = v.replace(/[^0-9.]/g, '');
+              // 마침표가 2개 이상인 경우 하나만 남김
+              v = v.replace(/(\..*)\./g, '$1');
+              e.target.value = v;
+            });
+            // 값이 완성되어 포커스를 잃거나 엔터를 누를 때 서버로 전송
+            el.addEventListener('change', e => {
+              const val = e.target.value;
+              // 빈 값이나 마침표만 있는 경우는 무시
+              if (val && !isNaN(val)) {
+                updateSetting(cls, val);
+              }
+            });
+          } else {
+            // 나머지 정수 입력은 기존대로 input/ change 둘 다 허용
+            el.addEventListener('input', e => {
+              updateSetting(cls, e.target.value);
+            });
+            el.addEventListener('change', e => {
+              updateSetting(cls, e.target.value);
+            });
+          }
+        });
+      });
+
+      // 시스템 버튼 이벤트 처리
+      btnRun.addEventListener('click', async () => {
+        const r = await fetch('/api/isRunning/toggle', { method: 'POST' });
+        const d = await r.json();
+        applyStateUI(d);
+      });
+      btnEmg.addEventListener('click', async () => {
+        const r = await fetch('/api/emergencyStop', { method: 'POST' });
+        const d = await r.json();
+        applyStateUI(d);
+      });
+      btnHot.addEventListener('click', async () => {
+        const r = await fetch('/api/hot', { method: 'POST' });
+        const d = await r.json();
+        applyStateUI(d);
+      });
+      btnCold.addEventListener('click', async () => {
+        const r = await fetch('/api/cold', { method: 'POST' });
+        const d = await r.json();
+        applyStateUI(d);
+      });
+      // 음료 및 청소 시작 버튼 처리
+      $('.espresso_start').addEventListener('click', async () => {
+        const r = await fetch('/api/start/espresso', { method: 'POST' });
+        const d = await r.json();
+        applyStateUI(d);
+      });
+      $('.americano_start').addEventListener('click', async () => {
+        const r = await fetch('/api/start/americano', { method: 'POST' });
+        const d = await r.json();
+        applyStateUI(d);
+      });
+      $('.cafelatte_start').addEventListener('click', async () => {
+        const r = await fetch('/api/start/cafelatte', { method: 'POST' });
+        const d = await r.json();
+        applyStateUI(d);
+      });
+      $('.cleaning_start').addEventListener('click', async () => {
+        const r = await fetch('/api/start/cleaning', { method: 'POST' });
+        const d = await r.json();
+        applyStateUI(d);
+      });
+    </script>
+</body>
+
+</html>

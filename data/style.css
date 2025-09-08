@@ -1,0 +1,62 @@
+/* css */
+/* 전역 리셋 및 기본 스타일 */
+* {margin: 0;padding: 0;border-collapse: collapse;box-sizing: border-box;font-size: 20px;}
+
+body {padding: 10px;}
+
+section {height: 100%;display: flex;}
+
+.blockName {font-size: 20px;font-weight: 600;width: 150px;height: 50px;border: 1px solid #000;display: flex;align-items: center;justify-content: center;text-align: center;}
+
+/* 공통 버튼 스타일 */
+.btn {margin-right: 20px;padding: 10px 12px;height: 50px;min-width: 100px;border: none;border-radius: 6px;background: #e0e0e0;/* 기본 회색(off 상태) */color: #222;cursor: pointer;transition: transform 0.02s ease, filter 0.2s ease, background 0.2s ease, color 0.2s ease;	}
+.btn:active {transform: translateY(1px);filter: brightness(0.95);}
+
+/* 상태별 버튼 색상 */
+.isRunningButton.on {background: #2ecc71;color: #fff;}
+.hotButton.on {background: #d83b29;color: #fff;}
+.coldButton.on {background: #3498db;color: #fff;}
+
+/* 긴급 정지 버튼은 시스템이 작동 중일 때만 빨간색으로 표시 */
+.emergencyStopButton.on {background: red;color: #fff;}
+
+/* 시스템 버튼 묶음 */
+.system_button {border: none;padding: 20px 0;}
+.system_button .btn {font-size: 20px;font-weight: bold;}
+
+/* 설정 영역 */
+.setting_section {width: 100%;display: flex;flex-direction: column;gap: 20px;}
+.setting_section .title {width: 100%;height: 100px;display: flex;justify-content: flex-start;}
+.setting_section .title h2 {display: flex;align-items: center;margin-right: 100px;}
+.setting_section .title button {min-width: 100px;height: 50px;background-color: #31fa2a;font-weight: bold;border: none;border-radius: 4px;color: #333;}
+.setting_section .title button:hover {background-color: #29e124;color: #fff;}
+
+/* 개별 설정 블록 */
+.setting_section .setting_block {display: flex;height: 50px;}
+.setting_section .setting_block>div {margin-right: 20px;}
+.setting_section .setting_block>div {display: flex;align-items: center;justify-content: center;margin-right: 20px;}
+.setting_section .setting_block .menu_name {min-width: 150px;height: 50px;margin-right: 20px;border: 1px solid #000;display: flex;align-items: center;justify-content: center;}
+.setting_section .setting_block .menu_block_input {display: flex;flex-direction: column;width: 200px;height: 50px;border: 1px solid #000;}
+.setting_section .setting_block .menu_block_input div {width: 100%;height: 50%;text-align: right;display: flex;align-items: center;justify-content: center;padding-right: 4px;}
+.setting_section .setting_block .menu_block_input input {width: 100%;height: 50%;text-align: right;display: flex;align-items: center;justify-content: center;padding-right: 4px;border: 1px solid #000;}
+.setting_section .setting_block .running_start {min-width: 100px;height: 50px;background-color: #31fa2a;font-weight: bold;border: none;border-radius: 4px;color: #333;}
+.setting_section .setting_block .running_start:hover {background-color: #29e124;color: #fff;}
+
+/* 실시간 값 표시 블록 */
+.current_value_view {width: 960px; height: 100px; display: flex; flex-wrap: nowrap;}
+.current_value_view div {width: 240px; height: 80px; display: flex;flex-direction: column;width: 100%;height: 100%;border: 1px solid #000; border: 1px solid #000;}
+.current_value_view div p {width: 100%;height: 50%;text-align: right;display: flex;align-items: center;justify-content: center;padding-right: 4px; background-color: #fff;}
+
+
+
+/* 실시간 GPIO 상태 추적 */
+.gpio_state_view {width: 100%;display: flex;flex-wrap: wrap;margin-top: 50px;}
+.gpio_state_view article {display: flex;width: 100%;height: 120px;}
+.gpio_state_view article div {display: flex;flex-direction: column; width: 150px;height: 100%;border: 1px solid #000; border-collapse: collapse;}
+.gpio_state_view article div:first-child { width: 200px; height: 100%; display: flex;align-items: center;justify-content: center; }
+.gpio_state_view article div p {width: 100%; height: 40px;text-align: right;display: flex;align-items: center;justify-content: center;padding-right: 4px;}
+.gpio_state_view article div p:last-child {margin: 0 auto; width: 24px; height: 24px; text-align: right;display: flex;align-items: center;justify-content: center;padding-right: 4px; border-radius: 32px;border: 1px solid #000;};
+.gpio_state_view article div p.indicator {width: 80%;height: 80%;border-radius: 50%;margin: 10% auto; /* 위아래 여백 10%, 좌우는 가운데 정렬 */}
+/* 상태별 색상 지정 */
+.indicator.on  { background: #2ecc71; }  /* 초록색 (ON) */
+.indicator.off { background: #e74c3c; }  /* 빨간색 (OFF) */
