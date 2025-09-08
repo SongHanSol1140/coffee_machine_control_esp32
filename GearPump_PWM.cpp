@@ -3,7 +3,7 @@
 #include "variables.h"
 #include "GearPump_PWM.h"
 
-static constexpr int GEAR_PUMP_PWM_FREQ_HZ  = 2000; // Hz
+static constexpr int GEAR_PUMP_PWM_FREQ_HZ  = 1000; // Hz
 static constexpr int GEAR_PUMP_PWM_RES_BITS = 8;   // 10-bit -> duty 0~1023 / 8-bit -> duty 0~255
 static constexpr int GEAR_PUMP_PWM_MAX_DUTY = (1 << GEAR_PUMP_PWM_RES_BITS) - 1;
 

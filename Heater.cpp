@@ -16,7 +16,7 @@
 // =====================================================
 
 // ===== 공통 설정 =====
-static constexpr int HEATER2_PWM_FREQ_HZ  = 2000; // Hz
+static constexpr int HEATER2_PWM_FREQ_HZ  = 60; // Hz
 static constexpr int HEATER2_RES_BITS     = 8;   // 10-bit -> duty 0~1023 / 8-bit -> duty 0~255
 static constexpr int HEATER2_MAX_DUTY     = (1 << HEATER2_RES_BITS) - 1;
 
