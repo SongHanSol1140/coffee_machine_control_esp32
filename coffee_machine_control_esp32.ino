@@ -20,7 +20,7 @@ void setup() {
   FlowMeter_Setup();
   NTC_Temperture_Setup();
   Heater1_GPIO_Setup();
-  Heater2_PWM_Setup();
+  Heater2_GPIO_Setup();
   GearPump_PWM_Setup();
 
   // 2) WiFi / WebServer 시작
@@ -32,15 +32,16 @@ void loop() {
   if (WiFi.status() != WL_CONNECTED) {
     wifiSetup();
   }
-  // 0.5초 주기 측정/제어
+  delay(2);
   flowMeter_Output_Read();
   flowMeter_Input_Read();
+  delay(2);
   heater_1_NTC_Temperture_Read();
   heater_2_NTC_Temperture_Read();
-  Heater2_PWM_Compute();
-  // PID 계산 후 PWM 값을 바로 출력합니다.
-  Heater1_GPIO_Write();
-  Heater2_PWM_Write();
+  delay(2);
+  Heater2_GPIO_Write();
+  delay(2);
   CT_Emergency_Check();
-  delay(10);
+  delay(2);
+  
 }

@@ -1,16 +1,22 @@
-// Heater2_PWM.h
-#ifndef HEATER2_PWM_H
+// Heater2.h
+#ifndef HEATER_H
 #define HEATER_H
 
-void Heater1_GPIO_Setup();
-void Heater2_PWM_Setup();
-void Heater2_PWM_Compute();
-void Heater1_GPIO_On();
-void Heater1_GPIO_Off();
-void Heater2_PWM_On();
-void Heater2_PWM_Off();
-void Heater1_GPIO_Write();
-void Heater2_PWM_Write();
+extern void Heater1_GPIO_Setup();
+extern void Heater2_GPIO_Setup();
+
+extern void Heater1_GPIO_ON();
+extern void Heater1_GPIO_OFF();
+extern void Heater1_PID_Compute();
+
+// ★ 추가: 세트포인트 변경 시 적분 리셋용
+void Heater1_OnSetpointChanged();
+
+extern void Heater2_GPIO_ON();
+extern void Heater2_GPIO_OFF();
+extern void Heater2_GPIO_Write();
 
 
-#endif // HEATER2_PWM_H
+
+
+#endif // HEATER_H

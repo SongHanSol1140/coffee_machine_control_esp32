@@ -10,9 +10,9 @@ bool isCold = false;
 
 // CT ADC 입력핀
 float emergencyA = 5;
-float currentAmpere = 0;
+volatile float currentAmpere = 0;
 const int CT_emergencyAmpere_check_PIN = 36; // VP
-int ctAdcZero = 1950;
+int ctAdcZero = 3025;
 float ctAnalogValue = 0;
 
 // MCP23017
@@ -22,14 +22,14 @@ const int MCP23017_SCL = 22;
 // 유량계
 const int YF_S402B_PIN_OUTPUT_PIN = 18;
 const int YF_S402B_PIN_INPUT_PIN  = 19;
-float YF_S402B_outputFlow = 0;
-float YF_S402B_inputFlow  = 0;
+volatile float YF_S402B_outputFlow = 0;
+volatile float YF_S402B_inputFlow  = 0;
 
 // NTC 온도센서
 const int Heater_1_NTC_PIN = 35;
 const int Heater_2_NTC_PIN = 34;
-float Heater_1_NTC_TEMP = 0;
-float Heater_2_NTC_TEMP = 0;
+volatile float Heater_1_NTC_TEMP = 0;
+volatile float Heater_2_NTC_TEMP = 0;
 
 // 히터 위험 온도 기본값 초기화 (℃)
 // 사용자가 PID 탭에서 조절할 수 있으며, 시스템이 재부팅되어도 NVS에서 복원됩니다.
@@ -39,9 +39,9 @@ float h1_emer_tmp = 100.0f;
 float h2_emer_tmp2 = 100.0f;
 
 // 히터 제어
-const int Heater_1_GPIO_PIN = 25;
-const int Heater_2_PWM_PIN  = 33;
-int Heater_2_PWM_output_value = 0;
+const int Heater1_GPIO_SSR_PIN = 33;
+const int Heater2_GPIO_RELAY_PIN  = 25;
+double Heater1_output_value = 0.0;
 double Heter_PID_P = 0.5;
 double Heter_PID_I = 0.05;
 double Heter_PID_D = 0.02;
@@ -97,5 +97,5 @@ bool expanderGPIO10 = false;
 // PWM 상태 플래그 초기화
 // 기어펌프와 히터2 PWM 상태를 추적합니다.
 bool gearPumpOn = false;
-bool heater1_On = false;
-bool heater2_On = false;
+volatile bool heater1_On = false;
+volatile bool heater2_On = false;

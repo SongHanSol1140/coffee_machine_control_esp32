@@ -42,8 +42,8 @@
           <p class="yf_s402b_input_flow">0ml</p>
         </div>
         <div>
-          <p>히터 #2 출력(0-255)</p>
-          <p class="Heater_2_PWM_output_value">0</p>
+          <p>히터 #1 출력시간(ms)</p>
+          <p class="Heater1_output_value">0</p>
         </div>
       </div>
     </article>
@@ -153,7 +153,7 @@
       <div class="menu_block_input">
         <div>목표 온도 설정</div>
         <!-- 정수만 필요하다면 기존 number 그대로, 소수점도 허용하려면 아래와 같이 -->
-        <input type="text" class="c_tmp decimal-input" placeholder="℃" value="0" pattern="^-?\\d+(\\.\\d+)?$"
+        <input type="text" class="c_tmp decimal-input" placeholder="℃" value="0" pattern="^-?\d*(\.\d+)?$"
           inputmode="decimal" autocomplete="off">
       </div>
 
@@ -310,6 +310,44 @@
     </section>
     <!-- 프론트엔드 로직 -->
     <script>
+      let lastState = null;
+      let lastMeasurement = null;
+      let lastSettings = null;
+      async function fetchState() {
+        try {
+          const r = await fetch('/api/state', { cache: 'no-store' });
+          const d = await r.json();
+          lastState = d;                    // ★ 추가
+          applyStateUI(d);
+        } catch (e) { }
+      }
+
+
+      // === 입력 잠금(TTL) + 편집 가드 ===
+      const editing = new WeakSet();
+
+      document.addEventListener('focusin', e => { if (e.target.matches('input, textarea, select')) editing.add(e.target); });
+      document.addEventListener('focusout', e => { if (e.target.matches('input, textarea, select')) editing.delete(e.target); });
+
+      // 2) 타이핑 중 1초 잠금(TTL)
+      document.addEventListener('input', e => {
+        if (e.target.matches('input, textarea')) {
+          e.target.dataset.lockUntil = String(Date.now() + 1000); // 1초 잠금
+        }
+      });
+
+      function isLocked(el) { return +el.dataset.lockUntil > Date.now(); }
+      // 3) 편집/잠금 중이면 갱신 막기
+      function setValueIfIdle(el, value) {
+        if (editing.has(el) || document.activeElement === el || isLocked(el)) return;
+        const v = String(value ?? '');
+        if (el.value !== v) el.value = v;
+      }
+
+
+      function setClassIfIdle(className, value) {
+        document.querySelectorAll('.' + className).forEach(el => setValueIfIdle(el, value));
+      }
       // 간단한 선택자 헬퍼 함수들
       const $ = sel => document.querySelector(sel);
       const $$ = sel => document.querySelectorAll(sel);
@@ -337,6 +375,7 @@
         try {
           const r = await fetch('/api/state', { cache: 'no-store' });
           const d = await r.json();
+          lastState = d;
           applyStateUI(d);
         } catch (e) { }
       }
@@ -344,6 +383,7 @@
         try {
           const r = await fetch('/api/measurement', { cache: 'no-store' });
           const d = await r.json();
+          lastMeasurement = d;
           // 실시간 온도 및 유량, PWM 값을 표시
           const tempEls = $$('.heater_temperature_setting');
           tempEls[0].innerText = d.Heater_1_NTC_TEMP.toFixed(1) + '℃';
@@ -351,7 +391,7 @@
           $('.yf_s402b_output_flow').innerText = d.YF_S402B_outputFlow.toFixed(1) + 'ml';
           $('.yf_s402b_input_flow').innerText = d.YF_S402B_inputFlow.toFixed(1) + 'ml';
           $('.current_ampere').innerText = d.currentAmpere.toFixed(2);
-          $('.Heater_2_PWM_output_value').innerText = d.Heater_2_PWM_output_value;
+          $('.Heater1_output_value').innerText = d.Heater1_output_value;
           $('.ctAnalogValue').innerText = parseInt(d.ctAnalogValue);
           // GPIO 상태 표시 업데이트
           const gpioKeys = ['ESP32_GPIO25', 'GPIO1', 'GPIO2', 'GPIO3', 'GPIO4', 'GPIO5', 'GPIO6', 'GPIO7', 'GPIO8', 'GPIO9', 'GPIO10', 'PWM32', 'PWM33'];
@@ -375,55 +415,70 @@
         try {
           const r = await fetch('/api/settings', { cache: 'no-store' });
           const d = await r.json();
-          // 각 설정값을 입력란에 반영합니다.
-          $('.e_ml_set').value = d.e_ml_set;
-          $('.e_tmp_set').value = d.e_tmp_set;
-          $('.a_e_ml_set').value = d.a_e_ml_set;
-          $('.a_w_ml_set').value = d.a_w_ml_set;
-          $('.a_tmp_set').value = d.a_tmp_set;
-          $('.c_e_ml_set').value = d.c_e_ml_set;
-          $('.c_m_ml_set').value = d.c_m_ml_set;
-          // c_tmp_set은 여러 위치에서 사용될 수 있으므로 모두 갱신합니다.
-          document.querySelectorAll('.c_tmp_set').forEach(el => {
-            el.value = d.c_tmp_set;
-          });
-          $('.clean_time').value = d.clean_time;
-          $('.clean_time_all').value = d.clean_time_all;
-          $('.inhale_w_time').value = d.inhale_w_time;
-          $('.inhale_time').value = d.inhale_time;
-          $('.inhale_on_time').value = d.inhale_on_time;
-          $('.inhale_off_time').value = d.inhale_off_time;
-          $('.shake_time').value = d.shake_time;
-          $('.pump_out_per').value = d.pump_out_per;
-          $('.drain_time').value = d.drain_time;
-          $('.h2_limit_per').value = d.h2_limit_per;
-          $('.emergencyA').value = d.emergencyA;
-          $('.Heter_PID_P').value = d.Heter_PID_P;
-          $('.Heter_PID_I').value = d.Heter_PID_I;
-          $('.Heter_PID_D').value = d.Heter_PID_D;
-          $('.ctAdcZero').value = d.ctAdcZero;
+          lastSettings = d;
 
-          // PID 목표 온도(c_tmp) 값을 모든 관련 입력란에 반영합니다.
-          if (typeof d.c_tmp !== 'undefined') {
-            document.querySelectorAll('.c_tmp').forEach(el => {
-              el.value = d.c_tmp;
-            });
-          }
-
-          // 히터 위험 온도 설정값 반영
-          if (typeof d.h1_emer_tmp !== 'undefined') {
-            $('.h1_emer_tmp').value = d.h1_emer_tmp;
-          }
-          if (typeof d.h2_emer_tmp2 !== 'undefined') {
-            $('.h2_emer_tmp2').value = d.h2_emer_tmp2;
-          }
+          // ✅ 점(.) 없이 클래스명 전달 + 값은 두번째 인자
+          const map = [
+            ['e_ml_set', 'e_ml_set'],
+            ['e_tmp_set', 'e_tmp_set'],
+            ['a_e_ml_set', 'a_e_ml_set'],
+            ['a_w_ml_set', 'a_w_ml_set'],
+            ['a_tmp_set', 'a_tmp_set'],
+            ['c_e_ml_set', 'c_e_ml_set'],
+            ['c_m_ml_set', 'c_m_ml_set'],
+            ['c_tmp_set', 'c_tmp_set'],
+            ['c_tmp', 'c_tmp'],
+            ['clean_time', 'clean_time'],
+            ['clean_time_all', 'clean_time_all'],
+            ['inhale_w_time', 'inhale_w_time'],
+            ['inhale_time', 'inhale_time'],
+            ['inhale_on_time', 'inhale_on_time'],
+            ['inhale_off_time', 'inhale_off_time'],
+            ['shake_time', 'shake_time'],
+            ['pump_out_per', 'pump_out_per'],
+            ['drain_time', 'drain_time'],
+            ['h2_limit_per', 'h2_limit_per'],
+            ['emergencyA', 'emergencyA'],
+            ['Heter_PID_P', 'Heter_PID_P'],
+            ['Heter_PID_I', 'Heter_PID_I'],
+            ['Heter_PID_D', 'Heter_PID_D'],
+            ['ctAdcZero', 'ctAdcZero'],
+            ['h1_emer_tmp', 'h1_emer_tmp'],
+            ['h2_emer_tmp2', 'h2_emer_tmp2'],
+          ];
+          map.forEach(([cls, key]) => setClassIfIdle(cls, d[key]));
         } catch (e) { }
       }
+
 
       // 주기적으로 상태, 측정값, 설정값을 갱신
       setInterval(fetchState, 500);
       setInterval(fetchMeasurement, 500);
       setInterval(fetchSettings, 3000);
+
+
+      // 5초마다 최근 값 로그
+      setInterval(() => {
+        const ts = new Date().toLocaleTimeString();
+        console.groupCollapsed(`[DBG ${ts}] state / measurement / settings`);
+        if (lastState) console.log('state:', lastState);
+        if (lastMeasurement) console.log('measurement:', lastMeasurement);
+        if (lastSettings) console.log('settings:', lastSettings);
+        // 자주 보는 항목만 표 형식으로도 같이 보고 싶다면:
+        if (lastMeasurement || lastSettings) {
+          console.table({
+            T1: lastMeasurement?.Heater_1_NTC_TEMP,
+            T2: lastMeasurement?.Heater_2_NTC_TEMP,
+            H2_out: lastMeasurement?.Heater1_output_value,
+            SP: lastSettings?.c_tmp ?? lastSettings?.c_tmp_set,
+            P: lastSettings?.Heter_PID_P,
+            I: lastSettings?.Heter_PID_I,
+            D: lastSettings?.Heter_PID_D
+          });
+        }
+        console.groupEnd();
+      }, 5000);
+
       // 페이지 로드시 즉시 호출
       fetchState(); fetchMeasurement(); fetchSettings();
 
@@ -510,10 +565,9 @@
             // 숫자와 소수점만 남기고 나머지는 제거, '.'은 한 번만 허용
             el.addEventListener('input', e => {
               let v = e.target.value;
-              // 숫자, 마침표만 유지
-              v = v.replace(/[^0-9.]/g, '');
-              // 마침표가 2개 이상인 경우 하나만 남김
-              v = v.replace(/(\..*)\./g, '$1');
+              v = v.replace(/[^0-9.\-]/g, '');   // 숫자, 점, 마이너스만 허용
+              v = v.replace(/(?!^)-/g, '');      // 맨 앞이 아닌 '-' 제거
+              v = v.replace(/(\..*)\./g, '$1');  // 점(.) 한 개만 허용
               e.target.value = v;
             });
             // 값이 완성되어 포커스를 잃거나 엔터를 누를 때 서버로 전송

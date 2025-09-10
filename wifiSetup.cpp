@@ -13,6 +13,7 @@
 #include <freertos/task.h>
 
 // 와이파이 정보
+// const char* wifi_ssid = "NNX2-2.4G";
 const char* wifi_ssid = "nnx-factory 3 2.4G";
 const char* wifi_password = "$@43skshslrtm";
 const IPAddress wifiIP(192, 168, 40, 27);  // 접속할 고정 IP 설정(이미 사용중일 경우 동작 에러날 수 있음)
@@ -50,7 +51,7 @@ static String buildStateJson() {
 
 // GPIO 상태 갱신 함수
 static void readMachineGPIO() {
-  ESP32_GPIO25 = digitalRead(Heater_1_GPIO_PIN);
+  ESP32_GPIO25 = digitalRead(Heater2_GPIO_RELAY_PIN);
   expanderGPIO1 = expanderReadForDoc(1);
   expanderGPIO2 = expanderReadForDoc(2);
   expanderGPIO3 = expanderReadForDoc(3);
@@ -71,7 +72,7 @@ static String buildMeasurementJson() {
   doc["YF_S402B_outputFlow"] = YF_S402B_outputFlow;
   doc["YF_S402B_inputFlow"] = YF_S402B_inputFlow;
   doc["currentAmpere"] = currentAmpere;
-  doc["Heater_2_PWM_output_value"] = Heater_2_PWM_output_value;  // ★ 추가
+  doc["Heater1_output_value"] = Heater1_output_value;  // ★ 추가
 
   // ★ GPIO 상태값 추가
   doc["ESP32_GPIO25"] = ESP32_GPIO25 ? 1 : 0;
@@ -125,9 +126,9 @@ static String buildSettingsJson() {
   doc["Heter_PID_I"] = Heter_PID_I;
   doc["Heter_PID_D"] = Heter_PID_D;
   doc["ctAdcZero"] = ctAdcZero;
-  // 현재 PID 제어용 목표 온도(c_tmp)를 프론트엔드로 전송합니다.
+  
   doc["c_tmp"] = c_tmp;
-
+  // PID 제어 윈도우 주기(초)
   // 히터 위험 온도 설정값 추가
   // 프론트엔드에서 h1_emer_tmp (히터1), h2_emer_tmp2 (히터2) 값을 읽어 수정할 수 있습니다.
   doc["h1_emer_tmp"] = h1_emer_tmp;
@@ -166,6 +167,11 @@ void loadSettings() {
 
   // PID 제어용 현재 목표 온도 값을 로드합니다.
   c_tmp = preferences.getInt("c_tmp", c_tmp);
+  // --- PID 윈도우 주기(sec, ms) 로드 + 일관화 ---
+  // 윈도우 주기 로드
+  preferences.end();
+  Serial.println("[NVS] settings loaded");
+  
 
   // 히터 위험 온도 설정값 로드 (float)
   h1_emer_tmp = preferences.getFloat("h1_emer_tmp", h1_emer_tmp);
@@ -261,10 +267,7 @@ static void updateSettingByName(const String& name, const String& v) {
   } else if (name == "Heter_PID_D") {
     Heter_PID_D = dv;
     saveSetting(name, Heter_PID_D);
-  } else if (name == "Heater_2_PWM_output_value") {
-    Heater_2_PWM_output_value = iv;
-    saveSetting(name, iv);
-  } else if (name == "ctAdcZero") {
+  }else if (name == "ctAdcZero") {
     ctAdcZero = iv;
     saveSetting(name, iv);
   } else if (name == "h1_emer_tmp") {
@@ -279,6 +282,7 @@ static void updateSettingByName(const String& name, const String& v) {
     // PID 제어용 목표 온도값 설정 (정수)
     c_tmp = iv;
     saveSetting(name, iv);
+    Heater1_OnSetpointChanged();
   }
   Serial.printf("[UPDATE] %s = %s\n", name.c_str(), v.c_str());
 }
@@ -360,8 +364,8 @@ void startWebServer() {
       // 기어펌프 및 히터 OFF
       GearPump_PWM_OFF();
       if (isHot) {
-        Heater1_GPIO_Off();
-        Heater2_PWM_Off();
+        Heater1_GPIO_OFF();
+        Heater2_GPIO_OFF();
       }
       // 모든 expander 핀을 LOW로 설정하여 솔레노이드 밸브/펌프/밸브를 종료합니다.
       for (int pin = 1; pin <= 10; ++pin) {
@@ -369,8 +373,8 @@ void startWebServer() {
       }
       // 시스템 상태 플래그 리셋
       if (isHot) {
-        Heater1_GPIO_Off();
-        Heater2_PWM_Off();
+        Heater1_GPIO_OFF();
+        Heater2_GPIO_OFF();
       }
       emergencyStop = false;
       c_esspresso_ml = 0;
@@ -459,15 +463,14 @@ void startWebServer() {
         heater1_On = !heater1_On;
 
         if (heater1_On) {
-          // 수동으로 켤 때는 즉시 릴레이를 ON
-          Serial.println("Heater1_GPIO_ON");
-          digitalWrite(Heater_1_GPIO_PIN, HIGH);
+          Serial.println("Heater1_GPIO_On");
+          Heater1_GPIO_ON();
+
           ESP32_GPIO25 = true;
         } else {
-          // 수동으로 끌 때는 즉시 릴레이를 OFF
-          Serial.println("Heater1_GPIO_OFF");
-          digitalWrite(Heater_1_GPIO_PIN, LOW);
-          ESP32_GPIO25 = false;
+          Serial.println("Heater1_GPIO_Off");
+          Heater1_GPIO_OFF();
+
         }
       } else if (name.startsWith("GPIO")) {
         // 확장자 핀. 이름에서 숫자 추출 (GPIO1 ~ GPIO10)
@@ -502,11 +505,13 @@ void startWebServer() {
         // 히터2 PWM 토글
         heater2_On = !heater2_On;
         if (heater2_On) {
-          Serial.println("Heater2_PWM_On");
-          Heater2_PWM_On();
+          Serial.println("Heater2_GPIO_ON");
+          Heater2_GPIO_ON();
+          // digitalWrite(Heater1_GPIO_SSR_PIN, HIGH);
         } else {
-          Serial.println("Heater2_PWM_Off");
-          Heater2_PWM_Off();
+          Serial.println("Heater2_GPIO_OFF");
+          Heater2_GPIO_OFF();
+          // digitalWrite(Heater1_GPIO_SSR_PIN, LOW);
         }
       }
       // 토글 후 측정 JSON을 반환하여 프론트엔드가 갱신하도록 합니다.

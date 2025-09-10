@@ -11,7 +11,7 @@ extern bool isCold;
 
 // CT ADC 입력핀 (암페어로 환산하여 emergencyA값 초과 시 emergencyStop)
 extern float emergencyA;
-extern float currentAmpere;
+volatile extern float currentAmpere;
 extern const int CT_emergencyAmpere_check_PIN;
 extern int ctAdcZero;
 extern float ctAnalogValue;
@@ -23,14 +23,14 @@ extern const int MCP23017_SCL;
 // 유량계 YF‑S402B
 extern const int YF_S402B_PIN_OUTPUT_PIN;
 extern const int YF_S402B_PIN_INPUT_PIN;
-extern float YF_S402B_outputFlow;
-extern float YF_S402B_inputFlow;
+volatile extern float YF_S402B_outputFlow;
+volatile extern float YF_S402B_inputFlow;
 
 // NTC 온도 센서
 extern const int Heater_1_NTC_PIN;
 extern const int Heater_2_NTC_PIN;
-extern float Heater_1_NTC_TEMP;
-extern float Heater_2_NTC_TEMP;
+volatile extern float Heater_1_NTC_TEMP;
+volatile extern float Heater_2_NTC_TEMP;
 
 // 각 히터의 위험 온도 설정값 (℃)
 // 히터 #1(NTC1)과 히터 #2(NTC2)가 이 온도 이상으로 올라가면
@@ -40,9 +40,9 @@ extern float h1_emer_tmp;
 extern float h2_emer_tmp2;
 
 // 히터 제어
-extern const int Heater_1_GPIO_PIN;
-extern const int Heater_2_PWM_PIN;
-extern int Heater_2_PWM_output_value;
+extern const int Heater1_GPIO_SSR_PIN;
+extern const int Heater2_GPIO_RELAY_PIN;
+extern double Heater1_output_value;
 extern double Heter_PID_P;
 extern double Heter_PID_I;
 extern double Heter_PID_D;
@@ -101,8 +101,8 @@ extern bool expanderGPIO10; // 릴레이 #2
 // GearPump_PWM_ON() 호출 시 true, GearPump_PWM_OFF() 호출 시 false로 설정됩니다.
 extern bool gearPumpOn;
 // Heater2 PWM(SSR) 출력 상태. Heater2_PWM_Write() 호출 시 true, Heater2_PWM_ForceOff() 호출 시 false로 설정됩니다.
-extern bool heater1_On;
-extern bool heater2_On;
+volatile extern bool heater1_On;
+volatile extern bool heater2_On;
 
 // === 수동 히터 제어 플래그 ===
 // gpio_state_view 에서 히터 출력을 테스트하기 위해 사용합니다.

@@ -161,6 +161,7 @@
 		13. GPIO#18 유량계 총 유량(에스프레소 설정값 + 물 설정값)의 10%가 이동할때까지 대기
 		13. GPIO25 ON(Heater Relay)
 		14. GPIO33 PWM ON(Heater SSR) - PID 제어
+		16. GPIO Expander #6 ON
 		15. 공기 흡입 시작
 			15-1. 공기 흡입 시작 대기시간 대기
 			15-2. GPIO Expander #7 ON
@@ -168,10 +169,9 @@
 			15-4. GPIO Expander #7 OFF
 			15-5. 공기 흡입 OFF 시간 대기
 			15-6. 공기 흡입시간까지 ON/OFF반복 후 공기 흡입 종료
-		16. GPIO Expander #6 ON
 		17. 드레인 시간동안 대기
 		18. GPIO Expander #5 ON(출구 3Way Valve)
-		19. GPIO#18 유량계 총유량 > (아메리카노 에스프레소 설정값 + 아메리카노 물 설정값) * (히터 정지 유량비율(%) / 100)까지 대기
+		19. 유량계 초기화 + GPIO#18 유량계 총유량 > (아메리카노 에스프레소 설정값 + 아메리카노 물 설정값) * (히터 정지 유량비율(%) / 100)까지 대기
 		21. GPIO25 출력 정지 (Heater Relay)
 		22. GPIO33 PWM OFF (Heater SSR)
 		21. GPIO#18 유량계 총 유량 > 아메리카노 에스프레소 + 물 설정값 까지 대기
@@ -188,38 +188,42 @@
 		4. GPIO Expander #8 ON(혼합 입구 펌프)
 		5. GPIO#19 유량계 총 유량 > 카페라떼 에스프레소 설정값까지 대기
 		6. GPIO Expander #8 OFF(혼합 입구 펌프)
-		7. GPIO#19 유량계 누적값 초기화
-		8. GPIO Expander #2 ON(우유 전자변)
-		9. GPIO Expander #8 On(혼합 입구 펌프)
-		10. GPIO#19 유량계 총 유량 > 카페라떼 우유 설정값 비교값까지 대기
-		11. GPIO Expander #2 OFF(우유 전자변)
-		12. GPIO Expander #8 OFF(혼합 입구 펌프)
-		13. GPIO33 PWM ON(기어펌프)
-		14. GPIO33 PWM ON된 시간이 설정된 혼합시간과 일치할때까지 대기(순환)
-		18. GPIO Expander #6 ON (순환 3Way Valve)
+		7. GPIO Expander #1 OFF (에스프레소 출구 바이패스)
+		8. GPIO#19 유량계 누적값 초기화
+		9. GPIO Expander #2 ON(우유 전자변)
+		10. GPIO Expander #8 On(혼합 입구 펌프)
+		11. GPIO#19 유량계 총 유량 > 카페라떼 우유 설정값 비교값까지 대기
+		12. GPIO Expander #2 OFF(우유 전자변)
+		13. GPIO Expander #8 OFF(혼합 입구 펌프)
+		14. GPIO Expander #1 On (에스프레소 출구 바이패스)
+
+		15. GPIO33 PWM ON(기어펌프)
+		16. GPIO33 PWM ON된 시간이 설정된 혼합시간과 일치할때까지 대기(순환)
+		17. GPIO Expander #6 ON (순환 3Way Valve)
 		=> 이게 열려잇어야 내보내는거고 닫혀있어야 순환이 된다.
-		15-16.
+		18.
 		    필요한 량의 10%가 이동할때까지 대기 후 히터 ON
+		19. 
 		    GPIO25 ON(Heater Relay)
 		    GPIO33 PWM ON(Heater SSR) - PID 제어
-		17. 공기 흡입 시작
-			14-1. 공기 흡입 시작 대기시간 대기
-			14-2. GPIO Expander #7 ON
-			14-3. 공기 흡입 ON 시간 대기
-			14-4. GPIO Expander #7 OFF
-			14-5. 공기 흡입 OFF 시간 대기
-			14-6. 공기 흡입시간까지 ON/OFF반복 후 공기 흡입 종료
-		19. 드레인 시간동안 대기
-		20. GPIO Expander #5 ON(출구 3Way Valve)
-		21. GPIO#18 유량계 총유량 > (카페라떼 에스프레소 설정값 + 카페라떼 우유 설정값) * (히터 정지 유량비율(%) / 100)까지 대기
-		22. GPIO#25 OFF
-		23. GPIO#33 PWM OFF
-		24. GPIO#18 유량계 총 유량 > 카페라떼 에스프레소 + 우유 설정값 까지 대기
-		25. GPIO32 PWM출력 OFF (기어펌프)
-		26. GPIO Expander #6 OFF (순환 3Way Valve)
-		27. GPIO Expander #5 OFF (출구 3Way Valve)
-		28. GPIO Expander #1 OFF (에스프레소 출구 바이패스)
-		29. 제조 완료 (isWorking false)
+		20. 공기 흡입 시작(별도 테스크로 병행시작-아메리카노도 이렇게작동해야함)
+			20-1. 공기 흡입 시작 대기시간 대기
+			20-2. GPIO Expander #7 ON
+			20-3. 공기 흡입 ON 시간 대기
+			20-4. GPIO Expander #7 OFF
+			20-5. 공기 흡입 OFF 시간 대기
+			20-6. 공기 흡입시간까지 ON/OFF반복 후 공기 흡입 종료
+		21. 드레인 시간동안 대기
+		22. GPIO Expander #5 ON(출구 3Way Valve)
+		23. 유량계 초기화 + GPIO#18 유량계 총유량 > (카페라떼 에스프레소 설정값 + 카페라떼 우유 설정값) * (히터 정지 유량비율(%) / 100)까지 대기
+		24. GPIO#25 OFF
+		25. GPIO#33 PWM OFF
+		26. GPIO#18 유량계 총 유량 > 카페라떼 에스프레소 + 우유 설정값 까지 대기
+		27. GPIO32 PWM출력 OFF (기어펌프)
+		28. GPIO Expander #6 OFF (순환 3Way Valve)
+		29. GPIO Expander #5 OFF (출구 3Way Valve)
+		30. GPIO Expander #1 OFF (에스프레소 출구 바이패스)
+		31. 제조 완료 (isWorking false)
 
 
 	
